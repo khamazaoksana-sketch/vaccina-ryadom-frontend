@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вакцина Рядом — Админка</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F7F5;
+  --surface:#FFFFFF;
+  --border:#E1E4E1;
+  --border-strong:#C7CBC7;
+  --ink:#14171A;
+  --ink-soft:#565C60;
+  --ink-muted:#8A8F91;
+  --brand:#1F6F5C;
+  --brand-dark:#123B32;
+  --brand-tint:#E7F1EE;
+  --fresh:#237A56; --fresh-bg:#E3F5EC;
+  --check:#B36A16; --check-bg:#FBEFDD;
+  --stale:#6E7377; --stale-bg:#ECEDEB;
+  --danger:#B3261E; --danger-bg:#FBEAE9;
+  --radius:10px;
+  --radius-lg:18px;
+  --shadow:0 1px 2px rgba(20,23,26,0.05), 0 8px 24px rgba(20,23,26,0.04);
+}
+*{box-sizing:border-box;}
+[hidden]{display:none !important;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:inherit; margin:0; color:var(--ink);}
+button{font-family:inherit; cursor:pointer;}
+input{font-family:inherit;}
+:focus-visible{outline:2px solid var(--brand); outline-offset:2px;}
+
+.page{max-width:1080px; margin:0 auto; padding:0 20px 60px;}
+
+/* ---------- login ---------- */
+.login-wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;}
+.login-card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+  padding:32px; max-width:380px; width:100%; box-shadow:var(--shadow);
+}
+.login-card h1{font-size:20px; font-weight:700; margin-bottom:6px;}
+.login-card p{color:var(--ink-soft); font-size:13.5px; margin:0 0 22px;}
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:13px; color:var(--ink-soft); font-weight:500; margin-bottom:6px;}
+.field input{width:100%; padding:10px 12px; border:1px solid var(--border-strong); border-radius:8px; font-size:14px;}
+.btn-primary{width:100%; background:var(--brand); color:#fff; border:none; padding:11px; border-radius:8px; font-size:14px; font-weight:600;}
+.btn-primary:hover{background:var(--brand-dark);}
+.login-error{color:var(--danger); font-size:13px; margin:10px 0 0;}
+
+/* ---------- topbar ---------- */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding:20px 0; border-bottom:1px solid var(--border); margin-bottom:24px;
+}
+.topbar h1{font-size:18px; font-weight:700;}
+.btn-ghost{background:none; border:1px solid var(--border-strong); color:var(--ink-soft); padding:8px 14px; border-radius:8px; font-size:13px; font-weight:500;}
+.btn-ghost:hover{background:var(--surface);}
+
+/* ---------- section ---------- */
+section{margin-bottom:32px;}
+section h2{font-size:15px; font-weight:700; margin-bottom:14px;}
+
+/* ---------- stat cards ---------- */
+.stats-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:12px;}
+.stat-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px;}
+.stat-card .value{font-size:26px; font-weight:800; color:var(--brand-dark); line-height:1.1;}
+.stat-card .label{font-size:12.5px; color:var(--ink-soft); margin-top:6px;}
+
+/* ---------- empty queries ---------- */
+.empty-queries{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;}
+.eq-row{display:flex; justify-content:space-between; align-items:center; padding:11px 16px; font-size:13.5px;}
+.eq-row:not(:last-child){border-bottom:1px solid var(--border);}
+.eq-row .q{color:var(--ink);}
+.eq-row .q .sep{color:var(--ink-muted); margin:0 4px;}
+.eq-row .count{color:var(--ink-soft); font-variant-numeric:tabular-nums;}
+.list-placeholder{padding:20px; text-align:center; color:var(--ink-muted); font-size:13.5px;}
+
+/* ---------- pending queue ---------- */
+.pending-list{display:flex; flex-direction:column; gap:10px;}
+.pending-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px;}
+.pending-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px;}
+.type-badge{font-size:11px; font-weight:700; padding:3px 9px; border-radius:99px; white-space:nowrap;}
+.type-badge.new{background:var(--brand-tint); color:var(--brand-dark);}
+.type-badge.confirm{background:var(--check-bg); color:var(--check);}
+.pending-date{font-size:12px; color:var(--ink-muted);}
+.pending-rows{display:flex; flex-direction:column; gap:5px; font-size:13.5px; margin-bottom:12px;}
+.pending-rows .row{display:flex; gap:8px;}
+.pending-rows .k{color:var(--ink-soft); flex:none; min-width:110px;}
+.pending-rows .v{font-weight:500;}
+.pending-actions{display:flex; gap:8px;}
+.btn-approve, .btn-reject{flex:1; padding:9px; border-radius:8px; font-size:13.5px; font-weight:600; border:1px solid transparent;}
+.btn-approve{background:var(--brand); color:#fff;}
+.btn-approve:hover{background:var(--brand-dark);}
+.btn-reject{background:none; border-color:var(--border-strong); color:var(--ink-soft);}
+.btn-reject:hover{background:var(--danger-bg); border-color:var(--danger); color:var(--danger);}
+.btn-approve:disabled, .btn-reject:disabled{opacity:0.5; cursor:not-allowed;}
+
+.toast{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+  background:var(--ink); color:#fff; padding:12px 20px; border-radius:99px; font-size:13.5px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.2); z-index:60;
+}
+</style>
+</head>
+<body>
+
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <h1>Вакцина Рядом — Админка</h1>
+    <p>Введите адрес API и admin-токен из .env бэкенда, чтобы попасть в панель модерации.</p>
+    <div class="field">
+      <label for="apiBaseInput">Адрес API</label>
+      <input id="apiBaseInput" placeholder="https://ваш-бэкенд.vercel.app или пусто, если тот же домен">
+    </div>
+    <div class="field">
+      <label for="tokenInput">Admin-токен</label>
+      <input id="tokenInput" type="password" placeholder="Значение ADMIN_TOKEN из .env">
+    </div>
+    <button class="btn-primary" id="loginBtn">Войти</button>
+    <p class="login-error" id="loginError" hidden>Не удалось войти — проверьте адрес API и токен.</p>
+  </div>
+</div>
+
+<div class="page" id="dashboard" hidden>
+  <header class="topbar">
+    <h1>Вакцина Рядом — Админка</h1>
+    <button class="btn-ghost" id="logoutBtn">Выйти</button>
+  </header>
+
+  <section>
+    <h2>Аналитика</h2>
+    <div class="stats-grid" id="statsGrid">
+      <div class="list-placeholder">Загрузка…</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Топ запросов без результатов (30 дней)</h2>
+    <div class="empty-queries" id="emptyQueries">
+      <div class="list-placeholder">Загрузка…</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Очередь на модерацию</h2>
+    <div class="pending-list" id="pendingList">
+      <div class="list-placeholder">Загрузка…</div>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+let apiBase = "";
+let adminToken = "";
+
+function apiUrl(path){ return apiBase.replace(/\/$/, "") + path; }
+
+async function apiFetch(path, options = {}){
+  const res = await fetch(apiUrl(path), {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      "x-admin-token": adminToken,
+      ...(options.headers || {}),
+    },
+  });
+  if (!res.ok){
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Ошибка запроса (${res.status})`);
+  }
+  return res.json();
+}
+
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.hidden = false;
+  setTimeout(() => { t.hidden = true; }, 3000);
+}
+
+function fmtDate(dateStr){
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  return d.toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function fmtPrice(v){
+  if (v === null || v === undefined || v === "") return null;
+  if (typeof v === "number") return v.toLocaleString("ru-RU") + " ₽";
+  return String(v);
+}
+
+// ---- login ----
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  apiBase = document.getElementById("apiBaseInput").value.trim();
+  adminToken = document.getElementById("tokenInput").value.trim();
+  const errorEl = document.getElementById("loginError");
+
+  if (!adminToken){
+    errorEl.textContent = "Введите admin-токен.";
+    errorEl.hidden = false;
+    return;
+  }
+
+  try {
+    await apiFetch("/api/admin/analytics");
+    errorEl.hidden = true;
+    document.getElementById("loginWrap").hidden = true;
+    document.getElementById("dashboard").hidden = false;
+    loadAll();
+  } catch (e){
+    errorEl.textContent = "Не удалось войти: " + e.message;
+    errorEl.hidden = false;
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  adminToken = "";
+  document.getElementById("tokenInput").value = "";
+  document.getElementById("dashboard").hidden = true;
+  document.getElementById("loginWrap").hidden = false;
+});
+
+// ---- analytics ----
+async function loadAnalytics(){
+  const grid = document.getElementById("statsGrid");
+  try {
+    const a = await apiFetch("/api/admin/analytics");
+    const cards = [
+      { value: a.totalClinics, label: "Клиник в базе" },
+      { value: a.totalConfirmations, label: "Всего подтверждений" },
+      { value: a.pendingCount, label: "В очереди на проверку" },
+      { value: a.approvedLast7Days, label: "Одобрено за 7 дней" },
+      { value: a.freshPercent + "%", label: "Записей со статусом «Свежее»" },
+    ];
+    grid.innerHTML = cards.map(c => `
+      <div class="stat-card">
+        <div class="value">${c.value}</div>
+        <div class="label">${c.label}</div>
+      </div>
+    `).join("");
+  } catch (e){
+    grid.innerHTML = `<div class="list-placeholder">Не удалось загрузить аналитику: ${e.message}</div>`;
+  }
+}
+
+// ---- top empty queries ----
+async function loadEmptyQueries(){
+  const wrap = document.getElementById("emptyQueries");
+  try {
+    const rows = await apiFetch("/api/admin/top-empty-queries");
+    if (rows.length === 0){
+      wrap.innerHTML = `<div class="list-placeholder">За последние 30 дней пустых запросов не было.</div>`;
+      return;
+    }
+    wrap.innerHTML = rows.map(r => `
+      <div class="eq-row">
+        <span class="q">${r.vaccine || "любая вакцина"}<span class="sep">·</span>${r.city || "любой город"}</span>
+        <span class="count">${r.count}×</span>
+      </div>
+    `).join("");
+  } catch (e){
+    wrap.innerHTML = `<div class="list-placeholder">Не удалось загрузить: ${e.message}</div>`;
+  }
+}
+
+// ---- pending queue ----
+async function loadPending(){
+  const wrap = document.getElementById("pendingList");
+  try {
+    const items = await apiFetch("/api/admin/pending");
+    if (items.length === 0){
+      wrap.innerHTML = `<div class="list-placeholder">Очередь пуста — все заявки обработаны.</div>`;
+      return;
+    }
+    wrap.innerHTML = items.map(renderPendingCard).join("");
+
+    wrap.querySelectorAll("[data-approve]").forEach(btn => {
+      btn.addEventListener("click", () => handleDecision(btn.dataset.approve, "approve"));
+    });
+    wrap.querySelectorAll("[data-reject]").forEach(btn => {
+      btn.addEventListener("click", () => handleDecision(btn.dataset.reject, "reject"));
+    });
+  } catch (e){
+    wrap.innerHTML = `<div class="list-placeholder">Не удалось загрузить очередь: ${e.message}</div>`;
+  }
+}
+
+function renderPendingCard(item){
+  const isNew = !item.clinicId;
+  const vaccine = isNew ? item.vaccine : item.clinicId?.vaccine;
+  const clinicName = isNew ? item.clinicName : item.clinicId?.clinic;
+  const city = isNew ? item.city : item.clinicId?.city;
+  const address = isNew ? item.address : item.clinicId?.address;
+
+  const rows = [
+    ["Вакцина", vaccine],
+    ["Клиника", clinicName],
+    ["Город", city],
+    ["Адрес", address],
+    ["Стоимость вакцины", fmtPrice(item.vaccinePrice)],
+    ["Стоимость приёма", fmtPrice(item.visitPrice)],
+    ["Комментарий", item.note],
+  ].filter(([, v]) => v);
+
+  return `
+    <div class="pending-card">
+      <div class="pending-head">
+        <span class="type-badge ${isNew ? "new" : "confirm"}">${isNew ? "Новая клиника" : "Подтверждение существующей"}</span>
+        <span class="pending-date">${fmtDate(item.createdAt)}</span>
+      </div>
+      <div class="pending-rows">
+        ${rows.map(([k, v]) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("")}
+      </div>
+      <div class="pending-actions">
+        <button class="btn-approve" data-approve="${item._id}">Одобрить</button>
+        <button class="btn-reject" data-reject="${item._id}">Отклонить</button>
+      </div>
+    </div>
+  `;
+}
+
+async function handleDecision(id, action){
+  const buttons = document.querySelectorAll(`[data-approve="${id}"], [data-reject="${id}"]`);
+  buttons.forEach(b => b.disabled = true);
+  try {
+    await apiFetch(`/api/admin/${id}/${action}`, { method: "POST" });
+    showToast(action === "approve" ? "Заявка одобрена" : "Заявка отклонена");
+    loadPending();
+    loadAnalytics();
+  } catch (e){
+    showToast("Ошибка: " + e.message);
+    buttons.forEach(b => b.disabled = false);
+  }
+}
+
+function loadAll(){
+  loadAnalytics();
+  loadEmptyQueries();
+  loadPending();
+}
+</script>
+</body>
+</html>
