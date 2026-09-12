@@ -363,10 +363,10 @@ body.modal-open{overflow:hidden;}
         <input id="newAddressInput" placeholder="Улица, дом">
       </div>
 
-      <label for="vaccinePriceInput">Стоимость вакцины <span class="optional-tag">необязательно</span></label>
+      <label for="vaccinePriceInput">Стоимость вакцины</label>
       <input id="vaccinePriceInput" type="number" inputmode="numeric" min="0" step="1" placeholder="Например, 3500">
 
-      <label for="visitPriceInput">Стоимость приёма <span class="optional-tag">необязательно</span></label>
+      <label for="visitPriceInput">Стоимость приёма</label>
       <input id="visitPriceInput" type="number" inputmode="numeric" min="0" step="1" placeholder="Например, 1200">
 
       <label for="commentInput">Комментарий <span class="optional-tag">необязательно</span></label>
@@ -724,9 +724,11 @@ function updateSubmitState(){
     newFieldsOk = ["newVaccineInput","newCityInput","newClinicNameInput","newAddressInput"]
       .every(id => document.getElementById(id).value.trim().length > 0);
   }
-  submitBtn.disabled = !newFieldsOk;
+  const vaccinePriceOk = parsePriceInput(document.getElementById("vaccinePriceInput").value) !== null;
+  const visitPriceOk = parsePriceInput(document.getElementById("visitPriceInput").value) !== null;
+  submitBtn.disabled = !(newFieldsOk && vaccinePriceOk && visitPriceOk);
 }
-["newVaccineInput","newCityInput","newClinicNameInput","newAddressInput"].forEach(id => {
+["newVaccineInput","newCityInput","newClinicNameInput","newAddressInput","vaccinePriceInput","visitPriceInput"].forEach(id => {
   document.getElementById(id).addEventListener("input", updateSubmitState);
 });
 
