@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Вакцина Рядом — Админка</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C7.58 2 4 5.58 4 10c0 5.25 6.4 11.09 7.19 11.79a1.2 1.2 0 0 0 1.62 0C13.6 21.09 20 15.25 20 10c0-4.42-3.58-8-8-8z' fill='%231F6F5C'/%3E%3Cpath d='M12 6.5v7M8.5 10h7' stroke='%23fff' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -41,13 +42,20 @@ input{font-family:inherit;}
 
 .page{max-width:1080px; margin:0 auto; padding:0 20px 60px;}
 
+.brand-mark{display:inline-flex; align-items:center; gap:10px;}
+.brand-mark svg{width:22px; height:22px; flex:none;}
+
 /* ---------- login ---------- */
-.login-wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;}
+.login-wrap{
+  min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+  background:radial-gradient(circle at 50% 0%, var(--brand-tint) 0%, var(--bg) 55%);
+}
 .login-card{
   background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
   padding:32px; max-width:380px; width:100%; box-shadow:var(--shadow);
 }
-.login-card h1{font-size:20px; font-weight:700; margin-bottom:6px;}
+.login-card .brand-mark{margin-bottom:16px;}
+.login-card h1{font-size:19px; font-weight:700; margin-bottom:6px;}
 .login-card p{color:var(--ink-soft); font-size:13.5px; margin:0 0 22px;}
 .field{margin-bottom:16px;}
 .field label{display:block; font-size:13px; color:var(--ink-soft); font-weight:500; margin-bottom:6px;}
@@ -59,21 +67,30 @@ input{font-family:inherit;}
 /* ---------- topbar ---------- */
 .topbar{
   display:flex; align-items:center; justify-content:space-between; gap:16px;
-  padding:20px 0; border-bottom:1px solid var(--border); margin-bottom:24px;
+  padding:20px 0; border-bottom:1px solid var(--border); margin-bottom:28px;
 }
-.topbar h1{font-size:18px; font-weight:700;}
+.topbar h1{font-size:17px; font-weight:700;}
 .btn-ghost{background:none; border:1px solid var(--border-strong); color:var(--ink-soft); padding:8px 14px; border-radius:8px; font-size:13px; font-weight:500;}
 .btn-ghost:hover{background:var(--surface);}
 
 /* ---------- section ---------- */
-section{margin-bottom:32px;}
-section h2{font-size:15px; font-weight:700; margin-bottom:14px;}
+section{margin-bottom:36px;}
+.section-head{display:flex; align-items:center; gap:8px; margin-bottom:14px;}
+.section-head svg{width:17px; height:17px; color:var(--brand); flex:none;}
+section h2{font-size:15px; font-weight:700;}
+.count-badge{
+  margin-left:2px; font-size:11.5px; font-weight:700; color:var(--brand-dark);
+  background:var(--brand-tint); padding:2px 8px; border-radius:99px;
+}
 
 /* ---------- stat cards ---------- */
-.stats-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:12px;}
-.stat-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px;}
-.stat-card .value{font-size:26px; font-weight:800; color:var(--brand-dark); line-height:1.1;}
-.stat-card .label{font-size:12.5px; color:var(--ink-soft); margin-top:6px;}
+.stats-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:12px;}
+.stat-card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:6px;
+}
+.stat-card .value{font-size:25px; font-weight:800; color:var(--ink); line-height:1.1;}
+.stat-card .label{font-size:12.5px; color:var(--ink-soft); margin-top:4px;}
 
 /* ---------- empty queries ---------- */
 .empty-queries{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;}
@@ -115,7 +132,14 @@ section h2{font-size:15px; font-weight:700; margin-bottom:14px;}
 
 <div class="login-wrap" id="loginWrap">
   <div class="login-card">
-    <h1>Вакцина Рядом — Админка</h1>
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.4 11.09 7.19 11.79a1.2 1.2 0 0 0 1.62 0C13.6 21.09 20 15.25 20 10c0-4.42-3.58-8-8-8z" fill="var(--brand)"/>
+        <path d="M12 6.5v7M8.5 10h7" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <span style="font-size:13px; font-weight:600; color:var(--brand-dark);">Вакцина Рядом</span>
+    </span>
+    <h1>Админка</h1>
     <p>Введите адрес API и admin-токен из .env бэкенда, чтобы попасть в панель модерации.</p>
     <div class="field">
       <label for="apiBaseInput">Адрес API</label>
@@ -132,26 +156,42 @@ section h2{font-size:15px; font-weight:700; margin-bottom:14px;}
 
 <div class="page" id="dashboard" hidden>
   <header class="topbar">
-    <h1>Вакцина Рядом — Админка</h1>
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.4 11.09 7.19 11.79a1.2 1.2 0 0 0 1.62 0C13.6 21.09 20 15.25 20 10c0-4.42-3.58-8-8-8z" fill="var(--brand)"/>
+        <path d="M12 6.5v7M8.5 10h7" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <h1>Вакцина Рядом — Админка</h1>
+    </span>
     <button class="btn-ghost" id="logoutBtn">Выйти</button>
   </header>
 
   <section>
-    <h2>Аналитика</h2>
+    <div class="section-head">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <h2>Аналитика</h2>
+    </div>
     <div class="stats-grid" id="statsGrid">
       <div class="list-placeholder">Загрузка…</div>
     </div>
   </section>
 
   <section>
-    <h2>Топ запросов без результатов (30 дней)</h2>
+    <div class="section-head">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="6" stroke="currentColor" stroke-width="1.8"/><path d="M20 20l-5.5-5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <h2>Топ запросов без результатов (30 дней)</h2>
+    </div>
     <div class="empty-queries" id="emptyQueries">
       <div class="list-placeholder">Загрузка…</div>
     </div>
   </section>
 
   <section>
-    <h2>Очередь на модерацию</h2>
+    <div class="section-head">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h4l2 3h4l2-3h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="6" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/></svg>
+      <h2>Очередь на модерацию</h2>
+      <span class="count-badge" id="pendingBadge" hidden></span>
+    </div>
     <div class="pending-list" id="pendingList">
       <div class="list-placeholder">Загрузка…</div>
     </div>
@@ -238,11 +278,11 @@ async function loadAnalytics(){
   try {
     const a = await apiFetch("/api/admin/analytics");
     const cards = [
-      { value: a.totalClinics, label: "Клиник в базе" },
-      { value: a.totalConfirmations, label: "Всего подтверждений" },
-      { value: a.pendingCount, label: "В очереди на проверку" },
-      { value: a.approvedLast7Days, label: "Одобрено за 7 дней" },
-      { value: a.freshPercent + "%", label: "Записей со статусом «Свежее»" },
+      { icon: "clinics", value: a.totalClinics, label: "Клиник в базе" },
+      { icon: "confirmations", value: a.totalConfirmations, label: "Всего подтверждений" },
+      { icon: "pending", value: a.pendingCount, label: "В очереди на проверку" },
+      { icon: "approved", value: a.approvedLast7Days, label: "Одобрено за 7 дней" },
+      { icon: "fresh", value: a.freshPercent + "%", label: "Записей со статусом «Свежее»" },
     ];
     grid.innerHTML = cards.map(c => `
       <div class="stat-card">
@@ -250,6 +290,10 @@ async function loadAnalytics(){
         <div class="label">${c.label}</div>
       </div>
     `).join("");
+
+    const badge = document.getElementById("pendingBadge");
+    if (a.pendingCount > 0){ badge.textContent = a.pendingCount; badge.hidden = false; }
+    else { badge.hidden = true; }
   } catch (e){
     grid.innerHTML = `<div class="list-placeholder">Не удалось загрузить аналитику: ${e.message}</div>`;
   }
@@ -267,7 +311,7 @@ async function loadEmptyQueries(){
     wrap.innerHTML = rows.map(r => `
       <div class="eq-row">
         <span class="q">${r.vaccine || "любая вакцина"}<span class="sep">·</span>${r.city || "любой город"}</span>
-        <span class="count">${r.count}×</span>
+        <span class="count">${r.count}</span>
       </div>
     `).join("");
   } catch (e){
