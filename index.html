@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вакцина Рядом — найди вакцину рядом</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F7F5;
+  --surface:#FFFFFF;
+  --border:#E1E4E1;
+  --border-strong:#C7CBC7;
+  --ink:#14171A;
+  --ink-soft:#565C60;
+  --ink-muted:#8A8F91;
+  --brand:#1F6F5C;
+  --brand-dark:#123B32;
+  --brand-tint:#E7F1EE;
+  --fresh:#237A56; --fresh-bg:#E3F5EC;
+  --check:#B36A16; --check-bg:#FBEFDD;
+  --stale:#6E7377; --stale-bg:#ECEDEB;
+  --radius:10px;
+  --radius-lg:18px;
+  --shadow:0 1px 2px rgba(20,23,26,0.05), 0 8px 24px rgba(20,23,26,0.04);
+}
+*{box-sizing:border-box;}
+[hidden]{display:none !important;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:'Inter',system-ui,sans-serif; margin:0; color:var(--ink);}
+a{color:var(--brand-dark);}
+button{font-family:inherit; cursor:pointer;}
+input{font-family:inherit;}
+:focus-visible{outline:2px solid var(--brand); outline-offset:2px;}
+
+.page{max-width:1080px; margin:0 auto; padding:0 20px 40px;}
+
+/* ---------- home hero (landing) ---------- */
+.home-hero{padding:64px 0 48px; border-bottom:1px solid var(--border); margin-bottom:24px;}
+.brand-mark{
+  font-size:14px; font-weight:600; color:var(--brand-dark); letter-spacing:0.01em;
+  background:none; border:none; padding:0; font-family:inherit;
+  display:inline-flex; align-items:center; gap:8px;
+}
+.brand-mark svg{width:20px; height:20px; flex:none;}
+.home-hero h1{font-size:clamp(30px,4.4vw,44px); font-weight:700; line-height:1.14; margin:0 0 14px; max-width:640px; letter-spacing:-0.01em;}
+.hero-sub{color:var(--ink-soft); font-size:15.5px; max-width:none; margin:0 0 28px;}
+.hero-photo{
+  display:block; width:100%; margin-top:32px;
+  border-radius:var(--radius-lg); object-fit:cover; aspect-ratio:21/9;
+  border:1px solid var(--border);
+}
+
+/* ---------- top bar (results view) ---------- */
+.topbar{
+  position:sticky; top:0; z-index:10; background:var(--bg);
+  display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  padding:16px 0; border-bottom:1px solid var(--border); margin-bottom:22px;
+}
+.topbar-brand{cursor:pointer; flex:none;}
+.topbar-brand:hover{text-decoration:underline;}
+#topbarSearchSlot{flex:1; min-width:260px;}
+
+/* ---------- shared search bar (moved between home and topbar via JS) ---------- */
+
+.search-bar{
+  display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end;
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+  padding:18px; box-shadow:var(--shadow);
+}
+.search-bar.compact{
+  padding:8px 10px; box-shadow:none; border-radius:10px; gap:10px;
+}
+.search-bar.compact .field label{display:none;}
+.search-bar.compact .field input{padding:8px 10px; font-size:13.5px;}
+.search-bar.compact button[type=submit]{padding:9px 16px; font-size:13.5px;}
+.field{flex:1; min-width:180px; display:flex; flex-direction:column; gap:6px;}
+.field label{font-size:13px; color:var(--ink-soft); font-weight:500;}
+.field input{
+  padding:10px 12px; border:1px solid var(--border-strong); border-radius:8px;
+  font-size:14px; background:var(--bg); color:var(--ink); width:100%;
+}
+.field input:focus{background:var(--surface);}
+
+.ac-wrap{position:relative;}
+.ac-list{
+  position:absolute; top:calc(100% + 6px); left:0; right:0; width:100%;
+  background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  box-shadow:var(--shadow); max-height:240px; overflow-y:auto; z-index:30;
+  list-style:none; margin:0; padding:6px;
+}
+.ac-list[hidden]{display:none;}
+.ac-item{padding:9px 12px; border-radius:7px; cursor:pointer; font-size:14px; color:var(--ink);}
+.ac-item:hover, .ac-item.active{background:var(--brand-tint);}
+.ac-empty{padding:10px 12px; font-size:13px; color:var(--ink-muted);}
+.search-bar button[type=submit]{
+  background:var(--brand); color:#fff; border:none; padding:11px 22px;
+  border-radius:8px; font-size:14px; font-weight:600; white-space:nowrap;
+}
+.search-bar button[type=submit]:hover{background:var(--brand-dark);}
+
+/* ---------- content layout ---------- */
+.content{display:block;}
+.list-meta{color:var(--ink-soft); font-size:13px; margin:0 0 10px;}
+.clinic-list{display:flex; flex-direction:column; gap:8px;}
+
+.clinic-card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:13px 14px; cursor:pointer; transition:border-color .15s ease;
+}
+.clinic-card:hover{border-color:var(--border-strong);}
+.clinic-card.selected{border-color:var(--brand); background:var(--brand-tint);}
+.clinic-card .row1{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+.clinic-card .name{font-weight:600; font-size:14.5px; margin:0 0 3px;}
+.clinic-card .meta{font-size:12.5px; color:var(--ink-soft); margin:0;}
+
+.pill{
+  font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:99px; white-space:nowrap; flex:none;
+}
+.pill.fresh{background:var(--fresh-bg); color:var(--fresh);}
+.pill.check{background:var(--check-bg); color:var(--check);}
+.pill.stale{background:var(--stale-bg); color:var(--stale);}
+
+.empty-state{
+  border:1px dashed var(--border-strong); border-radius:var(--radius-lg);
+  padding:32px 20px; text-align:center; color:var(--ink-soft); font-size:14px;
+}
+.empty-state strong{display:block; color:var(--ink); font-size:16px; margin-bottom:6px; font-weight:700;}
+.empty-state-link{color:var(--brand-dark); font-weight:600; text-decoration:underline;}
+
+/* ---------- detail panel ---------- */
+.detail-panel{margin-top:20px;}
+.placeholder{
+  border:1px dashed var(--border-strong); border-radius:var(--radius-lg);
+  padding:40px 20px; text-align:center; color:var(--ink-muted); font-size:14px;
+}
+.clinic-detail{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+  padding:22px; box-shadow:var(--shadow);
+}
+.back-btn{display:none; align-items:center; gap:6px; border:none; background:none; color:var(--ink-soft); font-size:13px; padding:0 0 14px; font-weight:500;}
+.detail-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:4px;}
+.detail-head h2{font-size:19px; font-weight:600;}
+.detail-loc{color:var(--ink-soft); font-size:13.5px; margin:2px 0 16px;}
+
+.detail-rows{display:flex; flex-direction:column; gap:10px; padding:14px 0; border-top:1px solid var(--border); font-size:13.5px;}
+.detail-rows .row{display:flex; justify-content:space-between; gap:12px;}
+.detail-rows .row .k{color:var(--ink-soft);}
+.detail-rows .row .v{font-weight:600; text-align:right;}
+
+.note-block{background:var(--bg); border-radius:10px; padding:12px 14px; margin-top:14px;}
+.note-block .label{font-size:11.5px; color:var(--ink-muted); margin:0 0 4px; font-weight:600;}
+.note-block p{font-size:13px; color:var(--ink-soft); margin:0;}
+
+.confirm-btn{
+  width:100%; margin-top:16px; background:var(--surface); color:var(--brand-dark);
+  border:1.5px solid var(--brand); border-radius:8px; padding:11px; font-size:14px; font-weight:600;
+}
+.confirm-btn:hover{background:var(--brand-tint);}
+
+/* ---------- footer ---------- */
+.disclaimers{margin-top:36px; padding-top:20px; font-size:12.5px; color:var(--ink-muted); max-width:640px;}
+.disclaimers p{margin:0 0 8px;}
+.footer-brand{
+  display:flex; align-items:center; gap:8px; margin-top:18px;
+  font-size:13px; font-weight:600; color:var(--brand-dark);
+}
+.footer-brand svg{width:18px; height:18px; flex:none;}
+
+/* ---------- modal ---------- */
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(20,23,26,0.45); display:flex;
+  align-items:center; justify-content:center; padding:20px; z-index:50;
+}
+.modal-backdrop[hidden]{display:none;}
+.modal{
+  background:var(--surface); border-radius:var(--radius-lg); padding:26px; max-width:380px; width:100%;
+  position:relative; box-shadow:0 24px 48px rgba(0,0,0,0.18);
+}
+.modal-scroll{max-height:calc(100vh - 120px); overflow-y:auto; -webkit-overflow-scrolling:touch; padding:0 6px; margin:0 -6px;}
+body.modal-open{overflow:hidden;}
+.modal .modal-close{
+  position:absolute; top:14px; right:14px; width:28px; height:28px;
+  display:flex; align-items:center; justify-content:center;
+  border:none; background:none; border-radius:8px; color:var(--ink-muted); padding:0;
+}
+.modal .modal-close:hover{background:var(--bg); color:var(--ink);}
+.modal .modal-close svg{width:16px; height:16px; display:block;}
+.modal h3{font-size:17px; font-weight:600; margin:0 6px 6px 0; padding-right:24px;}
+.modal-sub{font-size:13px; color:var(--ink-soft); margin:0 0 16px;}
+.modal label{font-size:13px; color:var(--ink-soft); display:block; margin-bottom:6px; font-weight:500;}
+.modal input, .modal textarea{width:100%; padding:10px 12px; border:1px solid var(--border-strong); border-radius:8px; font-size:14px; margin-bottom:14px; font-family:inherit;}
+.modal textarea{resize:vertical;}
+.modal input[type=number]::-webkit-outer-spin-button,
+.modal input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+.modal input[type=number]{-moz-appearance:textfield; appearance:textfield;}
+.optional-tag{font-weight:400; color:var(--ink-muted); font-size:11.5px;}
+.modal button:disabled{background:var(--border-strong); cursor:not-allowed;}
+.modal button:disabled:hover{background:var(--border-strong);}
+
+.modal button{width:100%; background:var(--brand); color:#fff; border:none; padding:11px; border-radius:8px; font-size:14px; font-weight:600;}
+.modal button:hover{background:var(--brand-dark);}
+
+.toast{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+  background:var(--ink); color:#fff; padding:12px 20px; border-radius:99px; font-size:13.5px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.2); z-index:60;
+}
+
+/* ---------- responsive: master-detail on desktop, slide-over on mobile ---------- */
+@media (min-width:720px){
+  .content{display:grid; grid-template-columns:340px 1fr; gap:22px; align-items:start;}
+  .content[hidden]{display:none;}
+  .content.no-results{grid-template-columns:1fr;}
+  .detail-panel{margin-top:0; position:sticky; top:20px;}
+  .back-btn{display:none !important;}
+}
+.content.no-results .detail-panel{display:none;}
+@media (max-width:719px){
+  .detail-panel.open{
+    position:fixed; inset:0; background:var(--bg); z-index:30; overflow-y:auto;
+    padding:16px 20px 40px; margin:0;
+  }
+  .detail-panel:not(.open){display:none;}
+  .back-btn{display:inline-flex;}
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="topbar" id="topbar" hidden>
+    <button class="brand-mark topbar-brand" id="topbarBrand" type="button">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.4 11.09 7.19 11.79a1.2 1.2 0 0 0 1.62 0C13.6 21.09 20 15.25 20 10c0-4.42-3.58-8-8-8z" fill="var(--brand)"/>
+        <path d="M12 6.5v7M8.5 10h7" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <span>Вакцина Рядом</span>
+    </button>
+    <div id="topbarSearchSlot"></div>
+  </header>
+
+  <section class="home-hero" id="homeHero">
+    <h1>Найди вакцину рядом</h1>
+    <p class="hero-sub" id="heroSub">Введите вакцину и город, чтобы узнать, в какой клинике есть подтверждения по наличию вакцин.</p>
+    <div id="searchSlot"></div>
+    <img class="hero-photo" src="https://images.unsplash.com/photo-1763013259279-3195d6330519?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" alt="Улыбающаяся семья">
+  </section>
+
+  <main class="content" id="resultsView" hidden>
+    <section class="list-panel">
+      <p class="list-meta" id="listMeta"></p>
+      <div class="clinic-list" id="clinicList"></div>
+    </section>
+
+    <section class="detail-panel" id="detailPanel">
+      <button class="back-btn" id="backBtn">← Назад к списку</button>
+      <p class="list-meta">Карточка клиники</p>
+      <div class="placeholder" id="detailPlaceholder">Выберите клинику из списка, чтобы увидеть детали и оставить подтверждение.</div>
+      <article class="clinic-detail" id="clinicDetail" hidden>
+        <div class="detail-head">
+          <h2 id="dName"></h2>
+          <span class="pill" id="dPill"></span>
+        </div>
+        <p class="detail-loc" id="dLoc"></p>
+
+        <div class="detail-rows">
+          <div class="row"><span class="k">Последнее подтверждение</span><span class="v" id="dDate"></span></div>
+          <div class="row"><span class="k">Подтверждений</span><span class="v" id="dCount"></span></div>
+          <div class="row"><span class="k">Стоимость вакцины</span><span class="v" id="dVaccinePrice"></span></div>
+          <div class="row"><span class="k">Стоимость приёма</span><span class="v" id="dVisitPrice"></span></div>
+          <div class="row" id="dAgeRow"><span class="k">Для кого</span><span class="v" id="dAge"></span></div>
+          <div class="row" id="dAddressRow"><span class="k">Адрес</span><span class="v" id="dAddress"></span></div>
+          <div class="row" id="dContactsRow"><span class="k">Контакты</span><span class="v" id="dContacts"></span></div>
+          <div class="row" id="dDoctorRow"><span class="k">Рекомендуют врача</span><span class="v" id="dDoctor"></span></div>
+        </div>
+
+        <div class="note-block" id="dNoteBlock">
+          <p class="label">Доп. информация от пользователя</p>
+          <p id="dNote"></p>
+        </div>
+
+        <button class="confirm-btn" id="confirmOpenBtn">Подтвердить наличие</button>
+      </article>
+    </section>
+  </main>
+
+  <footer class="disclaimers">
+    <p>Перед визитом уточняйте наличие вакцины в клинике напрямую. Необходима консультация врача.</p>
+    <p>Вопросы и поддержка: <a href="mailto:support@vaccina-ryadom.ru">support@vaccina-ryadom.ru</a></p>
+    <div class="footer-brand">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.4 11.09 7.19 11.79a1.2 1.2 0 0 0 1.62 0C13.6 21.09 20 15.25 20 10c0-4.42-3.58-8-8-8z" fill="var(--brand)"/>
+        <path d="M12 6.5v7M8.5 10h7" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <span>Вакцина Рядом</span>
+    </div>
+  </footer>
+</div>
+
+<form id="searchForm" class="search-bar" autocomplete="off">
+  <div class="field">
+    <label for="vaccineInput">Вакцина</label>
+    <div class="ac-wrap">
+      <input id="vaccineInput" placeholder="Например, Варилрикс" autocomplete="off">
+      <ul class="ac-list" id="vaccineAcList" hidden></ul>
+    </div>
+  </div>
+  <div class="field">
+    <label for="cityInput">Город</label>
+    <div class="ac-wrap">
+      <input id="cityInput" placeholder="Например, Екатеринбург" autocomplete="off">
+      <ul class="ac-list" id="cityAcList" hidden></ul>
+    </div>
+  </div>
+  <button type="submit">Найти клиники</button>
+</form>
+
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" id="modalClose" aria-label="Закрыть">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <div class="modal-scroll">
+    <div id="stepForm">
+      <h3 id="modalTitle">Подтвердить наличие вакцины</h3>
+
+      <div id="newEntryFields" hidden>
+        <label for="newVaccineInput">Вакцина</label>
+        <input id="newVaccineInput" placeholder="Например, Варилрикс">
+
+        <label for="newCityInput">Город</label>
+        <input id="newCityInput" placeholder="Например, Екатеринбург">
+
+        <label for="newClinicNameInput">Название клиники</label>
+        <input id="newClinicNameInput" placeholder="Например, Детская поликлиника №5">
+
+        <label for="newAddressInput">Адрес клиники</label>
+        <input id="newAddressInput" placeholder="Улица, дом">
+      </div>
+
+      <label for="vaccinePriceInput">Стоимость вакцины <span class="optional-tag">необязательно</span></label>
+      <input id="vaccinePriceInput" type="number" inputmode="numeric" min="0" step="1" placeholder="Например, 3500">
+
+      <label for="visitPriceInput">Стоимость приёма <span class="optional-tag">необязательно</span></label>
+      <input id="visitPriceInput" type="number" inputmode="numeric" min="0" step="1" placeholder="Например, 1200">
+
+      <label for="commentInput">Комментарий <span class="optional-tag">необязательно</span></label>
+      <textarea id="commentInput" rows="3" placeholder="Например: были в наличии 2 упаковки, просили звонить заранее"></textarea>
+
+      <button id="submitBtn" disabled>Отправить</button>
+    </div>
+
+    <div id="stepDone" hidden>
+      <h3>Спасибо!</h3>
+      <p class="modal-sub">Заявка отправлена на модерацию и появится на сайте после проверки.</p>
+      <button id="modalDoneBtn">Готово</button>
+    </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const API_BASE = "https://vaccina-ryadom-backend.onrender.com";
+
+const FRESH_RANK = {"Свежее":0, "Нужна проверка":1, "Устарело":2};
+const PILL_CLASS = {"Свежее":"fresh", "Нужна проверка":"check", "Устарело":"stale"};
+
+let currentResults = [];
+let selectedIndex = null;
+
+function fmtPrice(v){
+  if (v === null || v === undefined || v === "") return "—";
+  if (typeof v === "number") return v.toLocaleString("ru-RU") + " ₽";
+  return String(v);
+}
+
+function fmtDate(dateStr){
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  const now = new Date();
+  const days = Math.floor((now - d) / (1000*60*60*24));
+  if (days <= 0) return "сегодня";
+  if (days === 1) return "вчера";
+  if (days < 7) return days + " дн. назад";
+  if (days < 30) return Math.floor(days/7) + " нед. назад";
+  if (days < 365) return Math.floor(days/30) + " мес. назад";
+  return Math.floor(days/365) + " г. назад";
+}
+
+// Приводит документ из реального API (английские ключи из MongoDB)
+// к тем же русским ключам, на которые рассчитан весь остальной код —
+// это единственное, что позволяет не трогать renderList/openDetail и т.д.
+function mapClinicFromApi(c){
+  return {
+    "_id": c._id,
+    "Вакцина": c.vaccine,
+    "Клиника": c.clinic,
+    "Город": c.city,
+    "Локация": c.location,
+    "Адрес": c.address,
+    "Дата_подтверждения": c.lastConfirmedAt,
+    "Свежесть": c.freshness,
+    "Число_подтверждений": c.confirmationCount,
+    "Стоимость_вакцины": c.vaccinePrice,
+    "Стоимость_приема": c.visitPrice,
+    "Контакты": c.contacts,
+    "Врач": c.doctor,
+    "Заметка_пользователя": c.note,
+    "Возрастная_категория": c.ageCategory,
+  };
+}
+
+let VACCINES = [];
+let CITIES = [];
+
+async function buildOptionLists(){
+  try {
+    const [vaccines, cities] = await Promise.all([
+      fetch(`${API_BASE}/api/vaccines`).then(r => r.json()),
+      fetch(`${API_BASE}/api/cities`).then(r => r.json()),
+    ]);
+    VACCINES.length = 0; VACCINES.push(...vaccines);
+    CITIES.length = 0; CITIES.push(...cities);
+  } catch (e){
+    console.error("Не удалось загрузить списки вакцин/городов:", e);
+  }
+}
+
+function setupAutocomplete(inputEl, listEl, options){
+  let activeIndex = -1;
+
+  function renderOptions(query){
+    const q = query.trim().toLowerCase();
+    const matches = (q ? options.filter(o => o.toLowerCase().includes(q)) : options).slice(0, 8);
+    listEl.innerHTML = "";
+    activeIndex = -1;
+
+    if (matches.length === 0){
+      listEl.hidden = true;
+      return;
+    }
+    matches.forEach(opt => {
+      const li = document.createElement("li");
+      li.className = "ac-item";
+      li.textContent = opt;
+      li.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        inputEl.value = opt;
+        listEl.hidden = true;
+      });
+      listEl.appendChild(li);
+    });
+    listEl.hidden = false;
+  }
+
+  inputEl.addEventListener("input", () => renderOptions(inputEl.value));
+  inputEl.addEventListener("focus", () => renderOptions(inputEl.value));
+  inputEl.addEventListener("blur", () => { listEl.hidden = true; });
+
+  inputEl.addEventListener("keydown", (e) => {
+    const items = [...listEl.querySelectorAll(".ac-item")];
+    if (listEl.hidden || items.length === 0) return;
+    if (e.key === "ArrowDown"){
+      e.preventDefault();
+      activeIndex = Math.min(activeIndex + 1, items.length - 1);
+    } else if (e.key === "ArrowUp"){
+      e.preventDefault();
+      activeIndex = Math.max(activeIndex - 1, 0);
+    } else if (e.key === "Enter" && activeIndex >= 0){
+      e.preventDefault();
+      inputEl.value = items[activeIndex].textContent;
+      listEl.hidden = true;
+      return;
+    } else if (e.key === "Escape"){
+      listEl.hidden = true;
+      return;
+    } else {
+      return;
+    }
+    items.forEach((li, i) => li.classList.toggle("active", i === activeIndex));
+  });
+}
+
+// Реальный поиск через API вместо фильтрации локального массива.
+// Сортировку по свежести/дате теперь делает сам бэкенд (routes/search.js).
+async function search(vaccineQuery, cityQuery){
+  const params = new URLSearchParams();
+  if (vaccineQuery.trim()) params.set("vaccine", vaccineQuery.trim());
+  if (cityQuery.trim()) params.set("city", cityQuery.trim());
+
+  const res = await fetch(`${API_BASE}/api/search?${params.toString()}`);
+  if (!res.ok) throw new Error(`Сервер ответил с ошибкой (${res.status})`);
+  const data = await res.json();
+  return data.map(mapClinicFromApi);
+}
+
+function renderList(){
+  const listEl = document.getElementById("clinicList");
+  const metaEl = document.getElementById("listMeta");
+  const contentEl = document.getElementById("resultsView");
+  listEl.innerHTML = "";
+
+  if (currentResults.length === 0){
+    contentEl.classList.add("no-results");
+    metaEl.textContent = "";
+    listEl.innerHTML = `<div class="empty-state">
+      <strong>Пока нет подтверждений по этому запросу</strong>
+      Попробуйте другой город или другое написание вакцины — либо
+      <a href="#" id="firstConfirmLink" class="empty-state-link">подтвердить наличие</a>
+      самостоятельно.
+    </div>`;
+    document.getElementById("firstConfirmLink").addEventListener("click", (e) => {
+      e.preventDefault();
+      openConfirmModal(true);
+    });
+    return;
+  }
+
+  contentEl.classList.remove("no-results");
+  metaEl.textContent = currentResults.length + (currentResults.length === 1 ? " клиника найдена" : " клиник найдено");
+
+  currentResults.forEach((r, i) => {
+    const card = document.createElement("div");
+    card.className = "clinic-card" + (i === selectedIndex ? " selected" : "");
+    card.innerHTML = `
+      <div class="row1">
+        <p class="name">${r["Клиника"]}</p>
+        <span class="pill ${PILL_CLASS[r["Свежесть"]]}">${r["Свежесть"]}</span>
+      </div>
+      <p class="meta">${r["Локация"] || r["Город"] || ""} — ${fmtDate(r["Дата_подтверждения"])}, ${r["Число_подтверждений"]} подтв.</p>
+    `;
+    card.addEventListener("click", () => openDetail(i));
+    listEl.appendChild(card);
+  });
+}
+
+function renderLoading(){
+  const listEl = document.getElementById("clinicList");
+  const metaEl = document.getElementById("listMeta");
+  const contentEl = document.getElementById("resultsView");
+  contentEl.classList.add("no-results");
+  metaEl.textContent = "";
+  listEl.innerHTML = `<div class="empty-state">
+    <strong>Загрузка…</strong>
+    Если сервер долго не использовался, первый ответ может занять до минуты.
+  </div>`;
+}
+
+function renderError(message){
+  const listEl = document.getElementById("clinicList");
+  const metaEl = document.getElementById("listMeta");
+  const contentEl = document.getElementById("resultsView");
+  contentEl.classList.add("no-results");
+  metaEl.textContent = "";
+  listEl.innerHTML = `<div class="empty-state">
+    <strong>Не удалось загрузить данные</strong>
+    ${message}
+  </div>`;
+}
+
+function openDetail(i){
+  selectedIndex = i;
+  const r = currentResults[i];
+
+  document.getElementById("detailPlaceholder").hidden = true;
+  const detail = document.getElementById("clinicDetail");
+  detail.hidden = false;
+
+  document.getElementById("dName").textContent = r["Клиника"];
+  document.getElementById("dLoc").textContent = r["Локация"] || r["Город"] || "";
+  const pill = document.getElementById("dPill");
+  pill.textContent = r["Свежесть"];
+  pill.className = "pill " + PILL_CLASS[r["Свежесть"]];
+
+  document.getElementById("dDate").textContent = fmtDate(r["Дата_подтверждения"]);
+  document.getElementById("dCount").textContent = r["Число_подтверждений"];
+  document.getElementById("dVaccinePrice").textContent = fmtPrice(r["Стоимость_вакцины"]);
+  document.getElementById("dVisitPrice").textContent = fmtPrice(r["Стоимость_приема"]);
+
+  const ageRow = document.getElementById("dAgeRow");
+  if (r["Возрастная_категория"]){ ageRow.style.display = "flex"; document.getElementById("dAge").textContent = r["Возрастная_категория"]; }
+  else ageRow.style.display = "none";
+
+  const addressRow = document.getElementById("dAddressRow");
+  if (r["Адрес"]){ addressRow.style.display = "flex"; document.getElementById("dAddress").textContent = r["Адрес"]; }
+  else addressRow.style.display = "none";
+
+  const contactsRow = document.getElementById("dContactsRow");
+  if (r["Контакты"]){ contactsRow.style.display = "flex"; document.getElementById("dContacts").textContent = r["Контакты"]; }
+  else contactsRow.style.display = "none";
+
+  const doctorRow = document.getElementById("dDoctorRow");
+  if (r["Врач"]){ doctorRow.style.display = "flex"; document.getElementById("dDoctor").textContent = r["Врач"]; }
+  else doctorRow.style.display = "none";
+
+  const noteBlock = document.getElementById("dNoteBlock");
+  if (r["Заметка_пользователя"]){ noteBlock.style.display = "block"; document.getElementById("dNote").textContent = r["Заметка_пользователя"]; }
+  else noteBlock.style.display = "none";
+
+  renderList();
+  document.getElementById("detailPanel").classList.add("open");
+}
+
+function closeDetail(){
+  document.getElementById("detailPanel").classList.remove("open");
+}
+
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.hidden = false;
+  setTimeout(() => { t.hidden = true; }, 3200);
+}
+
+function parsePriceInput(raw){
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const num = Number(trimmed);
+  if (isNaN(num)) return null;
+  return num === 0 ? "Бесплатно" : num;
+}
+
+function pluralize(n, [one, few, many]){
+  const mod10 = n % 10, mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if ([2,3,4].includes(mod10) && ![12,13,14].includes(mod100)) return few;
+  return many;
+}
+
+async function setHeroSub(){
+  try {
+    const all = await search("", "");
+    const count = all.length;
+    const word = pluralize(count, ["подтверждение","подтверждения","подтверждений"]);
+    document.getElementById("heroSub").textContent =
+      `${count} ${word} от людей, которые сделали прививку в вашем городе. ` +
+      `Введите вакцину и город, чтобы узнать, в какой клинике есть подтверждения по наличию вакцин.`;
+  } catch (e){
+    console.error("Не удалось посчитать общее число подтверждений:", e);
+  }
+}
+
+function goHome(){
+  const form = document.getElementById("searchForm");
+  form.classList.remove("compact");
+  document.getElementById("searchSlot").appendChild(form);
+  document.getElementById("homeHero").hidden = false;
+  document.getElementById("topbar").hidden = true;
+  document.getElementById("resultsView").hidden = true;
+  selectedIndex = null;
+}
+
+function goResults(){
+  const form = document.getElementById("searchForm");
+  form.classList.add("compact");
+  document.getElementById("topbarSearchSlot").appendChild(form);
+  document.getElementById("homeHero").hidden = true;
+  document.getElementById("topbar").hidden = false;
+  document.getElementById("resultsView").hidden = false;
+}
+
+document.getElementById("searchForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const vaccine = document.getElementById("vaccineInput").value;
+  const city = document.getElementById("cityInput").value;
+  if (!vaccine.trim() && !city.trim()){
+    document.getElementById("vaccineInput").focus();
+    return;
+  }
+  selectedIndex = null;
+  document.getElementById("detailPlaceholder").hidden = false;
+  document.getElementById("clinicDetail").hidden = true;
+  goResults();
+  renderLoading();
+  try {
+    currentResults = await search(vaccine, city);
+    renderList();
+  } catch (err){
+    renderError(err.message);
+  }
+});
+
+document.getElementById("topbarBrand").addEventListener("click", goHome);
+document.getElementById("backBtn").addEventListener("click", closeDetail);
+
+// ---- confirmation modal flow ----
+const modal = document.getElementById("modalBackdrop");
+const submitBtn = document.getElementById("submitBtn");
+const newEntryFields = document.getElementById("newEntryFields");
+let isNewEntry = false;
+
+function updateSubmitState(){
+  let newFieldsOk = true;
+  if (isNewEntry){
+    newFieldsOk = ["newVaccineInput","newCityInput","newClinicNameInput","newAddressInput"]
+      .every(id => document.getElementById(id).value.trim().length > 0);
+  }
+  submitBtn.disabled = !newFieldsOk;
+}
+["newVaccineInput","newCityInput","newClinicNameInput","newAddressInput"].forEach(id => {
+  document.getElementById(id).addEventListener("input", updateSubmitState);
+});
+
+function openConfirmModal(newEntry){
+  isNewEntry = newEntry;
+  newEntryFields.hidden = !newEntry;
+
+  document.getElementById("stepForm").hidden = false;
+  document.getElementById("stepDone").hidden = true;
+  document.getElementById("vaccinePriceInput").value = "";
+  document.getElementById("visitPriceInput").value = "";
+  document.getElementById("commentInput").value = "";
+
+  if (newEntry){
+    document.getElementById("newVaccineInput").value = document.getElementById("vaccineInput").value.trim();
+    document.getElementById("newCityInput").value = document.getElementById("cityInput").value.trim();
+    document.getElementById("newClinicNameInput").value = "";
+    document.getElementById("newAddressInput").value = "";
+  }
+
+  updateSubmitState();
+  showModal();
+}
+
+function showModal(){
+  modal.hidden = false;
+  document.body.classList.add("modal-open");
+}
+function hideModal(){
+  modal.hidden = true;
+  document.body.classList.remove("modal-open");
+}
+
+document.getElementById("confirmOpenBtn").addEventListener("click", () => openConfirmModal(false));
+document.getElementById("modalClose").addEventListener("click", hideModal);
+modal.addEventListener("click", (e) => { if (e.target === modal) hideModal(); });
+
+submitBtn.addEventListener("click", async () => {
+  const vaccinePrice = parsePriceInput(document.getElementById("vaccinePriceInput").value);
+  const visitPrice = parsePriceInput(document.getElementById("visitPriceInput").value);
+  const comment = document.getElementById("commentInput").value.trim();
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Отправляем…";
+
+  try {
+    if (isNewEntry){
+      const body = {
+        vaccine: document.getElementById("newVaccineInput").value.trim(),
+        clinicName: document.getElementById("newClinicNameInput").value.trim(),
+        city: document.getElementById("newCityInput").value.trim(),
+        address: document.getElementById("newAddressInput").value.trim(),
+        vaccinePrice, visitPrice,
+        note: comment || null,
+      };
+      const res = await fetch(`${API_BASE}/api/clinics`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(()=>({}))).error || `Ошибка (${res.status})`);
+    } else {
+      const r = currentResults[selectedIndex];
+      const body = { clinicId: r["_id"], vaccinePrice, visitPrice, note: comment || null };
+      const res = await fetch(`${API_BASE}/api/confirmations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(()=>({}))).error || `Ошибка (${res.status})`);
+    }
+
+    document.getElementById("stepForm").hidden = true;
+    document.getElementById("stepDone").hidden = false;
+  } catch (err){
+    showToast("Не удалось отправить: " + err.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Отправить";
+  }
+});
+
+document.getElementById("modalDoneBtn").addEventListener("click", () => {
+  hideModal();
+  // Заявка ушла на модерацию, а не опубликовалась мгновенно — поэтому
+  // просто закрываем модалку и сообщаем об этом честно, не выдавая
+  // непроверенные данные за уже обновлённые в списке/карточке.
+  if (!isNewEntry && selectedIndex !== null){
+    openDetail(selectedIndex);
+  }
+  showToast("Спасибо! Заявка отправлена на модерацию.");
+});
+
+// ---- init ----
+(async function init(){
+  await buildOptionLists();
+  setupAutocomplete(document.getElementById("vaccineInput"), document.getElementById("vaccineAcList"), VACCINES);
+  setupAutocomplete(document.getElementById("cityInput"), document.getElementById("cityAcList"), CITIES);
+  setHeroSub();
+  goHome();
+})();
+</script>
+
+</body>
+</html>
