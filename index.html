@@ -852,13 +852,18 @@ document.getElementById("modalDoneBtn").addEventListener("click", () => {
 });
 
 // ---- init ----
-(async function init(){
-  await buildOptionLists();
-  setupAutocomplete(document.getElementById("vaccineInput"), document.getElementById("vaccineAcList"), VACCINES);
-  setupAutocomplete(document.getElementById("cityInput"), document.getElementById("cityAcList"), CITIES);
-  setHeroSub();
-  goHome();
-})();
+// goHome() переставляет форму поиска в нужное место в разметке — это должно
+// произойти сразу, синхронно, ДО любых сетевых запросов. Иначе при медленной
+// загрузке (например, "холодный старт" бесплатного тарифа Render) страница
+// на секунду-другую показывает форму в её исходном, "сыром" месте в разметке.
+goHome();
+setupAutocomplete(document.getElementById("vaccineInput"), document.getElementById("vaccineAcList"), VACCINES);
+setupAutocomplete(document.getElementById("cityInput"), document.getElementById("cityAcList"), CITIES);
+
+// Списки вакцин/городов и общий счётчик подгружаются в фоне и не должны
+// блокировать первую отрисовку страницы.
+buildOptionLists();
+setHeroSub();
 </script>
 
 </body>
