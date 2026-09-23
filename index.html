@@ -73,6 +73,28 @@ input{font-family:inherit;}
 
 .page{max-width:1080px; margin:0 auto; padding:0 20px 40px;}
 
+/* ---------- persistent site header (always visible, home + results) ---------- */
+.site-header{border-bottom:1px solid var(--border); background:var(--surface);}
+.site-header-inner{
+  max-width:1080px; margin:0 auto; padding:12px 20px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.site-header .brand-mark{font-size:16.5px; gap:10px;}
+.site-header .brand-mark svg{width:27px; height:27px;}
+.quick-confirm-btn{
+  display:inline-flex; align-items:center; gap:7px; flex:none;
+  background:var(--brand); color:#fff; border:none;
+  border-radius:8px; padding:8px 14px; font-size:13.5px; font-weight:600; white-space:nowrap;
+}
+.quick-confirm-btn:hover{background:var(--brand-dark);}
+.quick-confirm-btn svg{width:15px; height:15px; flex:none;}
+@media (max-width:480px){
+  .quick-confirm-btn{
+    width:36px; height:36px; padding:0; border-radius:50%; justify-content:center;
+  }
+  .quick-confirm-btn .qc-label{display:none;}
+}
+
 /* ---------- home hero (landing) ---------- */
 .home-hero{padding:64px 0 48px; border-bottom:1px solid var(--border); margin-bottom:24px;}
 .brand-mark{
@@ -81,8 +103,6 @@ input{font-family:inherit;}
   display:inline-flex; align-items:center; gap:8px;
 }
 .brand-mark svg{width:20px; height:20px; flex:none;}
-.home-hero .brand-mark{font-size:16.5px; gap:10px; margin-bottom:2px;}
-.home-hero .brand-mark svg{width:27px; height:27px;}
 .home-hero h1{font-size:clamp(30px,4.4vw,44px); font-weight:700; line-height:1.14; margin:14px 0 14px; max-width:640px; letter-spacing:-0.01em;}
 .hero-sub{color:var(--ink-soft); font-size:15.5px; max-width:none; margin:0 0 28px;}
 .hero-photo{
@@ -269,6 +289,25 @@ body.modal-open{overflow:hidden;}
 </head>
 <body>
 
+<header class="site-header" id="siteHeader">
+  <div class="site-header-inner">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.4 11.09 7.19 11.79a1.2 1.2 0 0 0 1.62 0C13.6 21.09 20 15.25 20 10c0-4.42-3.58-8-8-8z" fill="var(--brand)"/>
+        <path d="M12 6.5v7M8.5 10h7" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <span>Вакцина Рядом</span>
+    </span>
+    <button type="button" class="quick-confirm-btn" id="quickConfirmBtn" aria-label="Подтвердить наличие вакцины">
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M5 8.2l2 2 4-4.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="qc-label">Подтвердить наличие вакцины</span>
+    </button>
+  </div>
+</header>
+
 <div class="page">
 
   <header class="topbar" id="topbar" hidden>
@@ -283,13 +322,6 @@ body.modal-open{overflow:hidden;}
   </header>
 
   <section class="home-hero" id="homeHero">
-    <span class="brand-mark">
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.4 11.09 7.19 11.79a1.2 1.2 0 0 0 1.62 0C13.6 21.09 20 15.25 20 10c0-4.42-3.58-8-8-8z" fill="var(--brand)"/>
-        <path d="M12 6.5v7M8.5 10h7" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
-      </svg>
-      <span>Вакцина Рядом</span>
-    </span>
     <h1>Найди вакцину рядом</h1>
     <p class="hero-sub" id="heroSub">Введите вакцину и город, чтобы узнать, в какой клинике есть подтверждения по наличию вакцин.</p>
     <div id="searchSlot"></div>
@@ -379,17 +411,25 @@ body.modal-open{overflow:hidden;}
       <h3 id="modalTitle">Подтвердить наличие вакцины</h3>
 
       <div id="newEntryFields" hidden>
-        <label for="newVaccineInput">Вакцина</label>
-        <input id="newVaccineInput" placeholder="Например, Варилрикс">
-
-        <label for="newCityInput">Город</label>
-        <input id="newCityInput" placeholder="Например, Екатеринбург">
-
         <label for="newClinicNameInput">Название клиники</label>
         <input id="newClinicNameInput" placeholder="Например, Детская поликлиника №5">
 
-        <label for="newAddressInput">Адрес клиники</label>
-        <input id="newAddressInput" placeholder="Улица, дом">
+        <div id="newEntryRevealFields">
+          <label for="newVaccineInput">Вакцина</label>
+          <div class="ac-wrap">
+            <input id="newVaccineInput" placeholder="Например, Варилрикс" autocomplete="off">
+            <ul class="ac-list" id="newVaccineAcList" hidden></ul>
+          </div>
+
+          <label for="newCityInput">Город</label>
+          <div class="ac-wrap">
+            <input id="newCityInput" placeholder="Например, Екатеринбург" autocomplete="off">
+            <ul class="ac-list" id="newCityAcList" hidden></ul>
+          </div>
+
+          <label for="newAddressInput">Адрес клиники</label>
+          <input id="newAddressInput" placeholder="Улица, дом">
+        </div>
       </div>
 
       <label for="vaccinePriceInput">Стоимость вакцины</label>
@@ -782,6 +822,8 @@ function openConfirmModal(newEntry){
   showModal();
 }
 
+document.getElementById("quickConfirmBtn").addEventListener("click", () => openConfirmModal(true));
+
 function showModal(){
   modal.hidden = false;
   document.body.classList.add("modal-open");
@@ -859,6 +901,8 @@ document.getElementById("modalDoneBtn").addEventListener("click", () => {
 goHome();
 setupAutocomplete(document.getElementById("vaccineInput"), document.getElementById("vaccineAcList"), VACCINES);
 setupAutocomplete(document.getElementById("cityInput"), document.getElementById("cityAcList"), CITIES);
+setupAutocomplete(document.getElementById("newVaccineInput"), document.getElementById("newVaccineAcList"), VACCINES);
+setupAutocomplete(document.getElementById("newCityInput"), document.getElementById("newCityAcList"), CITIES);
 
 // Списки вакцин/городов и общий счётчик подгружаются в фоне и не должны
 // блокировать первую отрисовку страницы.
