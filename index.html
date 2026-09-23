@@ -723,11 +723,12 @@ function pluralize(n, [one, few, many]){
 
 async function setHeroSub(){
   try {
-    const all = await search("", "");
-    const count = all.length;
-    const word = pluralize(count, ["подтверждение","подтверждения","подтверждений"]);
+    const res = await fetch(`${API_BASE}/api/stats`);
+    if (!res.ok) throw new Error(`Сервер ответил с ошибкой (${res.status})`);
+    const { totalConfirmations } = await res.json();
+    const word = pluralize(totalConfirmations, ["подтверждение","подтверждения","подтверждений"]);
     document.getElementById("heroSub").textContent =
-      `${count} ${word} от людей, которые сделали прививку в вашем городе. ` +
+      `${totalConfirmations} ${word} от людей, которые сделали прививку в вашем городе. ` +
       `Введите вакцину и город, чтобы узнать, в какой клинике есть подтверждения по наличию вакцин.`;
   } catch (e){
     console.error("Не удалось посчитать общее число подтверждений:", e);
