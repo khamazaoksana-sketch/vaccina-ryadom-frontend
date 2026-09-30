@@ -122,6 +122,122 @@ section h2{font-size:15px; font-weight:700;}
 .btn-reject:hover{background:var(--danger-bg); border-color:var(--danger); color:var(--danger);}
 .btn-approve:disabled, .btn-reject:disabled{opacity:0.5; cursor:not-allowed;}
 
+/* ---------- tabs ---------- */
+.tabs{display:flex; gap:26px; border-bottom:1px solid var(--border); margin-bottom:22px; overflow-x:auto;}
+.tab-btn{
+  background:none; border:none; padding:0 0 12px; font-size:14px; font-weight:600;
+  color:var(--ink-soft); border-bottom:2px solid transparent; display:flex; align-items:center; gap:7px;
+  white-space:nowrap; margin-bottom:-1px;
+}
+.tab-btn:hover{color:var(--ink);}
+.tab-btn.active{color:var(--brand-dark); border-bottom-color:var(--brand);}
+.tab-panel[hidden]{display:none;}
+
+/* ---------- clinics manager ---------- */
+.clinics-toolbar{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px;}
+.clinics-toolbar input{flex:1; min-width:160px; padding:9px 12px; border:1px solid var(--border-strong); border-radius:8px; font-size:13.5px;}
+.clinics-toolbar button{background:var(--brand); color:#fff; border:none; padding:9px 16px; border-radius:8px; font-size:13.5px; font-weight:600; white-space:nowrap;}
+.clinics-toolbar button:hover{background:var(--brand-dark);}
+
+.merge-bar{
+  display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+  background:var(--brand-tint); border:1px solid var(--brand); border-radius:10px;
+  padding:10px 14px; margin-bottom:12px; font-size:13.5px; color:var(--brand-dark); font-weight:600;
+}
+.merge-bar .merge-bar-actions{display:flex; gap:8px;}
+.merge-bar button{width:auto; padding:8px 14px; font-size:13px; border-radius:7px;}
+
+.clinics-list{display:flex; flex-direction:column; gap:8px;}
+.clinic-row{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:13px 16px 13px 44px; position:relative; display:flex; justify-content:space-between; align-items:center; gap:12px; cursor:pointer;
+}
+.clinic-row:hover{border-color:var(--border-strong);}
+.clinic-checkbox{position:absolute; left:15px; top:50%; transform:translateY(-50%); width:17px; height:17px; cursor:pointer; margin:0;}
+.clinic-row .info{min-width:0;}
+.clinic-row .name{font-weight:600; font-size:14px; margin:0 0 2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.clinic-row .meta{font-size:12.5px; color:var(--ink-soft); margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.clinic-row .records-badge{
+  flex:none; font-size:11.5px; font-weight:700; color:var(--brand-dark);
+  background:var(--brand-tint); padding:3px 9px; border-radius:99px; white-space:nowrap;
+}
+
+.pagination{display:flex; justify-content:center; align-items:center; gap:14px; margin-top:16px;}
+.pagination button{background:none; border:1px solid var(--border-strong); color:var(--ink-soft); padding:7px 14px; border-radius:8px; font-size:13px; font-weight:500;}
+.pagination button:hover:not(:disabled){background:var(--surface);}
+.pagination button:disabled{opacity:0.4; cursor:not-allowed;}
+.pagination .page-info{font-size:13px; color:var(--ink-soft); display:flex; align-items:center; gap:6px;}
+.page-input{
+  width:46px; text-align:center; padding:5px 4px; border:1px solid var(--border-strong); border-radius:6px;
+  font-size:13px; font-family:inherit; color:var(--ink);
+}
+.page-input::-webkit-outer-spin-button, .page-input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+.page-input{-moz-appearance:textfield; appearance:textfield;}
+
+/* ---------- modal (edit clinic / confirm delete) ---------- */
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(20,23,26,0.45); display:flex;
+  align-items:center; justify-content:center; padding:20px; z-index:50;
+}
+.modal-backdrop[hidden]{display:none;}
+.modal{
+  background:var(--surface); border-radius:var(--radius-lg); padding:26px; max-width:480px; width:100%;
+  position:relative; box-shadow:0 24px 48px rgba(0,0,0,0.18);
+}
+.modal.modal-sm{max-width:360px;}
+.modal.modal-sm h3{text-align:center; margin-right:0; padding-right:0;}
+.modal.modal-sm .confirm-text{text-align:center;}
+.modal-scroll{max-height:calc(100vh - 120px); overflow-y:auto; -webkit-overflow-scrolling:touch; padding:0 4px; margin:0 -4px;}
+body.modal-open{overflow:hidden;}
+.modal .modal-close{
+  position:absolute; top:14px; right:14px; width:28px; height:28px;
+  display:flex; align-items:center; justify-content:center;
+  border:none; background:none; border-radius:8px; color:var(--ink-muted); padding:0;
+}
+.modal .modal-close:hover{background:var(--bg); color:var(--ink);}
+.modal .modal-close svg{width:16px; height:16px; display:block;}
+.modal h3{font-size:17px; font-weight:600; margin:0 6px 14px 0; padding-right:24px;}
+.modal label{font-size:12.5px; color:var(--ink-soft); display:block; margin-bottom:5px; font-weight:500;}
+.modal input, .modal textarea{width:100%; padding:9px 11px; border:1px solid var(--border-strong); border-radius:8px; font-size:13.5px; margin-bottom:12px; font-family:inherit;}
+.modal textarea{resize:vertical;}
+.field-row{display:flex; gap:10px;}
+.field-row > div{flex:1; min-width:0;}
+.modal-actions{display:flex; gap:8px; margin-top:6px;}
+.modal-actions button{flex:1;}
+.btn-save{background:var(--brand); color:#fff; border:none; padding:11px; border-radius:8px; font-size:14px; font-weight:600;}
+.btn-save:hover{background:var(--brand-dark);}
+.btn-danger{background:none; border:1.5px solid var(--danger); color:var(--danger); padding:10px; border-radius:8px; font-size:13.5px; font-weight:600;}
+.btn-danger:hover{background:var(--danger-bg);}
+.btn-cancel{background:none; border:1px solid var(--border-strong); color:var(--ink-soft); padding:10px; border-radius:8px; font-size:13.5px; font-weight:500;}
+.btn-cancel:hover{background:var(--bg);}
+
+.records-section{margin-top:18px; padding-top:16px; border-top:1px solid var(--border);}
+.records-section > .label{font-size:12px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.03em; margin-bottom:10px;}
+.record-item{background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:8px;}
+.record-item .rhead{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+.record-item .rname{font-weight:600; font-size:13.5px;}
+.record-item .rmeta{font-size:12px; color:var(--ink-soft); margin:2px 0 0;}
+.record-item .ractions{display:flex; gap:6px; flex:none;}
+.icon-btn{
+  background:none; border:1px solid var(--border-strong); border-radius:7px; width:28px; height:28px;
+  display:flex; align-items:center; justify-content:center; padding:0; color:var(--ink-soft);
+}
+.icon-btn:hover{background:var(--surface);}
+.icon-btn.danger:hover{background:var(--danger-bg); border-color:var(--danger); color:var(--danger);}
+.icon-btn svg{width:14px; height:14px;}
+.record-edit-form{margin-top:10px; padding-top:10px; border-top:1px solid var(--border);}
+.record-edit-form input, .record-edit-form textarea{margin-bottom:8px;}
+.record-edit-actions{display:flex; gap:8px;}
+.record-edit-actions button{flex:1; padding:8px; font-size:13px; border-radius:7px;}
+.confirm-text{font-size:13.5px; color:var(--ink-soft); margin:0 0 20px;}
+.confirm-text strong{color:var(--ink);}
+
+.merge-option{display:flex; gap:10px; align-items:flex-start; padding:10px; border:1px solid var(--border); border-radius:10px; margin-bottom:8px; cursor:pointer;}
+.merge-option:hover{border-color:var(--border-strong);}
+.merge-option input{width:auto; margin:3px 0 0; flex:none;}
+.merge-option .info .name{font-weight:600; font-size:13.5px;}
+.merge-option .info .meta{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+
 .toast{
   position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
   background:var(--ink); color:#fff; padding:12px 20px; border-radius:99px; font-size:13.5px;
@@ -177,26 +293,140 @@ section h2{font-size:15px; font-weight:700;}
     </div>
   </section>
 
-  <section>
-    <div class="section-head">
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="6" stroke="currentColor" stroke-width="1.8"/><path d="M20 20l-5.5-5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-      <h2>Топ запросов без результатов (30 дней)</h2>
-    </div>
-    <div class="empty-queries" id="emptyQueries">
-      <div class="list-placeholder">Загрузка…</div>
-    </div>
-  </section>
-
-  <section>
-    <div class="section-head">
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h4l2 3h4l2-3h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="6" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/></svg>
-      <h2>Очередь на модерацию</h2>
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" data-tab="pending" role="tab" aria-selected="true">
+      Очередь на модерацию
       <span class="count-badge" id="pendingBadge" hidden></span>
-    </div>
+    </button>
+    <button class="tab-btn" data-tab="clinics" role="tab" aria-selected="false">
+      Клиники
+      <span class="count-badge" id="clinicsCountBadge" hidden></span>
+    </button>
+    <button class="tab-btn" data-tab="empty" role="tab" aria-selected="false">
+      Топ запросов без результатов
+    </button>
+  </div>
+
+  <section class="tab-panel" data-tab-panel="pending">
     <div class="pending-list" id="pendingList">
       <div class="list-placeholder">Загрузка…</div>
     </div>
   </section>
+
+  <section class="tab-panel" data-tab-panel="clinics" hidden>
+    <div class="clinics-toolbar">
+      <input id="clinicsSearchInput" placeholder="Название клиники">
+      <input id="clinicsCityInput" placeholder="Город">
+      <input id="clinicsVaccineInput" placeholder="Вакцина">
+      <button id="clinicsSearchBtn">Найти</button>
+    </div>
+
+    <div class="merge-bar" id="mergeBar" hidden>
+      <span id="mergeBarText"></span>
+      <div class="merge-bar-actions">
+        <button class="btn-cancel" id="mergeBarClearBtn">Снять выбор</button>
+        <button class="btn-save" id="mergeBarMergeBtn">Объединить…</button>
+      </div>
+    </div>
+
+    <div class="clinics-list" id="clinicsList">
+      <div class="list-placeholder">Загрузка…</div>
+    </div>
+
+    <div class="pagination" id="clinicsPagination" hidden>
+      <button id="clinicsPrevBtn">← Назад</button>
+      <span class="page-info">
+        Стр. <input type="number" id="clinicsPageInput" min="1" class="page-input"> из <span id="clinicsTotalPages"></span>
+      </span>
+      <button id="clinicsNextBtn">Вперёд →</button>
+    </div>
+  </section>
+
+  <section class="tab-panel" data-tab-panel="empty" hidden>
+    <div class="empty-queries" id="emptyQueries">
+      <div class="list-placeholder">Загрузка…</div>
+    </div>
+  </section>
+</div>
+
+<!-- Модалка редактирования клиники + вложенных записей о вакцинах -->
+<div class="modal-backdrop" id="clinicModalBackdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="clinicModalTitle">
+    <button class="modal-close" id="clinicModalClose" aria-label="Закрыть">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div class="modal-scroll">
+      <h3 id="clinicModalTitle">Редактирование клиники</h3>
+
+      <label for="editClinicName">Название клиники</label>
+      <input id="editClinicName">
+
+      <div class="field-row">
+        <div>
+          <label for="editClinicCity">Город</label>
+          <input id="editClinicCity">
+        </div>
+        <div>
+          <label for="editClinicLocation">Локация <span style="font-weight:400; color:var(--ink-muted);">(необязательно)</span></label>
+          <input id="editClinicLocation">
+        </div>
+      </div>
+
+      <label for="editClinicAddress">Адрес</label>
+      <input id="editClinicAddress">
+
+      <div class="modal-actions">
+        <button class="btn-cancel" id="clinicModalCancelBtn">Отмена</button>
+        <button class="btn-save" id="clinicModalSaveBtn">Сохранить</button>
+      </div>
+
+      <button class="btn-danger" id="clinicDeleteBtn" style="width:100%; margin-top:10px;">Удалить клинику</button>
+
+      <div class="records-section">
+        <div class="label">Вакцины в этой клинике</div>
+        <div id="clinicRecordsList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модалка выбора "главной" клиники при объединении дублей -->
+<div class="modal-backdrop" id="mergeModalBackdrop" hidden>
+  <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="mergeModalTitle">
+    <button class="modal-close" id="mergeModalClose" aria-label="Закрыть">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div class="modal-scroll">
+      <h3 id="mergeModalTitle" style="text-align:left;">Объединить клиники</h3>
+      <p class="confirm-text" style="text-align:left;">Выберите карточку, которая останется — в неё переедут все вакцины из остальных, а остальные карточки будут удалены.</p>
+      <div id="mergeOptionsList"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="mergeModalCancelBtn">Отмена</button>
+        <button class="btn-save" id="mergeModalConfirmBtn">Объединить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Универсальная модалка подтверждения удаления -->
+<div class="modal-backdrop" id="confirmModalBackdrop" hidden>
+  <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+    <button class="modal-close" id="confirmModalClose" aria-label="Закрыть">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <h3 id="confirmModalTitle">Удалить?</h3>
+    <p class="confirm-text" id="confirmModalText"></p>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="confirmModalCancelBtn">Отмена</button>
+      <button class="btn-danger" id="confirmModalConfirmBtn" style="flex:1;">Удалить</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast" hidden></div>
@@ -242,6 +472,18 @@ function fmtPrice(v){
   return String(v);
 }
 
+function pluralizeRu(n, [one, few, many]){
+  const mod10 = n % 10, mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if ([2,3,4].includes(mod10) && ![12,13,14].includes(mod100)) return few;
+  return many;
+}
+
+function escapeHtml(str){
+  if (str === null || str === undefined) return "";
+  return String(str).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
 // ---- login ----
 document.getElementById("loginBtn").addEventListener("click", async () => {
   apiBase = document.getElementById("apiBaseInput").value.trim();
@@ -279,11 +521,12 @@ async function loadAnalytics(){
   try {
     const a = await apiFetch("/api/admin/analytics");
     const cards = [
-      { icon: "clinics", value: a.totalClinics, label: "Клиник в базе" },
-      { icon: "confirmations", value: a.totalConfirmations, label: "Всего подтверждений" },
-      { icon: "pending", value: a.pendingCount, label: "В очереди на проверку" },
-      { icon: "approved", value: a.approvedLast7Days, label: "Одобрено за 7 дней" },
-      { icon: "fresh", value: a.freshPercent + "%", label: "Записей со статусом «Свежее»" },
+      { value: a.totalClinics, label: "Клиник в базе" },
+      { value: a.totalRecords, label: "Записей о вакцинах" },
+      { value: a.totalConfirmations, label: "Всего подтверждений" },
+      { value: a.pendingCount, label: "В очереди на проверку" },
+      { value: a.approvedLast7Days, label: "Одобрено за 7 дней" },
+      { value: a.freshPercent + "%", label: "Записей со статусом «Свежее»" },
     ];
     grid.innerHTML = cards.map(c => `
       <div class="stat-card">
@@ -311,7 +554,7 @@ async function loadEmptyQueries(){
     }
     wrap.innerHTML = rows.map(r => `
       <div class="eq-row">
-        <span class="q">${r.vaccine || "любая вакцина"}<span class="sep">·</span>${r.city || "любой город"}</span>
+        <span class="q">${escapeHtml(r.vaccine) || "любая вакцина"}<span class="sep">·</span>${escapeHtml(r.city) || "любой город"}</span>
         <span class="count">${r.count}</span>
       </div>
     `).join("");
@@ -366,7 +609,7 @@ function renderPendingCard(item){
         <span class="pending-date">${fmtDate(item.createdAt)}</span>
       </div>
       <div class="pending-rows">
-        ${rows.map(([k, v]) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("")}
+        ${rows.map(([k, v]) => `<div class="row"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(v)}</span></div>`).join("")}
       </div>
       <div class="pending-actions">
         <button class="btn-approve" data-approve="${item._id}">Одобрить</button>
@@ -384,16 +627,543 @@ async function handleDecision(id, action){
     showToast(action === "approve" ? "Заявка одобрена" : "Заявка отклонена");
     loadPending();
     loadAnalytics();
+    loadClinics(clinicsPage);
   } catch (e){
     showToast("Ошибка: " + e.message);
     buttons.forEach(b => b.disabled = false);
   }
 }
 
+// ---- clinics manager ----
+let clinicsPage = 1;
+const clinicsLimit = 20;
+let clinicsTotal = 0;
+let currentClinicsById = {};
+let lastClinicsList = [];
+let selectedForMerge = new Set();
+
+// Если подходящих клиник не слишком много, подгружаем их все разом — тогда
+// отмеченные для объединения клиники могут по-настоящему "переезжать" на
+// первую страницу (заполняя её до 20), а не просто подниматься наверх
+// внутри той страницы, где их нашли. При большем количестве это было бы
+// слишком тяжело тащить в браузer, поэтому там остаётся обычная постраничная
+// подгрузка с сервера (без переезда между страницами).
+const CLIENT_SIDE_CAP = 300;
+let clinicsAllResults = null;
+
+async function loadClinics(page = 1){
+  clinicsPage = page;
+  const listEl = document.getElementById("clinicsList");
+  const pagEl = document.getElementById("clinicsPagination");
+  listEl.innerHTML = `<div class="list-placeholder">Загрузка…</div>`;
+
+  const search = document.getElementById("clinicsSearchInput").value.trim();
+  const city = document.getElementById("clinicsCityInput").value.trim();
+  const vaccine = document.getElementById("clinicsVaccineInput").value.trim();
+
+  try {
+    const probeParams = new URLSearchParams({ page: 1, limit: 1 });
+    if (search) probeParams.set("search", search);
+    if (city) probeParams.set("city", city);
+    if (vaccine) probeParams.set("vaccine", vaccine);
+    const probe = await apiFetch(`/api/admin/clinics?${probeParams.toString()}`);
+    clinicsTotal = probe.total;
+
+    const badge = document.getElementById("clinicsCountBadge");
+    badge.textContent = clinicsTotal;
+    badge.hidden = false;
+
+    if (clinicsTotal === 0){
+      listEl.innerHTML = `<div class="list-placeholder">Клиники не найдены — попробуйте изменить фильтры.</div>`;
+      pagEl.hidden = true;
+      clinicsAllResults = null;
+      lastClinicsList = [];
+      currentClinicsById = {};
+      return;
+    }
+
+    if (clinicsTotal <= CLIENT_SIDE_CAP){
+      clinicsAllResults = await fetchAllClinics(search, city, vaccine, clinicsTotal);
+      currentClinicsById = {};
+      clinicsAllResults.forEach(c => { currentClinicsById[c._id] = c; });
+      renderClinicsPaginated();
+    } else {
+      clinicsAllResults = null;
+      const params = new URLSearchParams({ page, limit: clinicsLimit });
+      if (search) params.set("search", search);
+      if (city) params.set("city", city);
+      if (vaccine) params.set("vaccine", vaccine);
+      const data = await apiFetch(`/api/admin/clinics?${params.toString()}`);
+      currentClinicsById = {};
+      data.clinics.forEach(c => { currentClinicsById[c._id] = c; });
+      lastClinicsList = data.clinics;
+      renderClinicRows();
+      updatePaginationControls(clinicsTotal);
+    }
+  } catch (e){
+    listEl.innerHTML = `<div class="list-placeholder">Не удалось загрузить клиники: ${e.message}</div>`;
+    pagEl.hidden = true;
+  }
+}
+
+async function fetchAllClinics(search, city, vaccine, total){
+  const pageSize = 100;
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  const all = [];
+  for (let p = 1; p <= pages; p++){
+    const params = new URLSearchParams({ page: p, limit: pageSize });
+    if (search) params.set("search", search);
+    if (city) params.set("city", city);
+    if (vaccine) params.set("vaccine", vaccine);
+    const data = await apiFetch(`/api/admin/clinics?${params.toString()}`);
+    all.push(...data.clinics);
+  }
+  return all;
+}
+
+// Клиентский режим (мало результатов): отмеченные клиники ставятся в начало
+// ОБЩЕГО списка, а не только текущей страницы, поэтому при выборе клиники
+// со 2-й страницы она реально переезжает на 1-ю, заполняя её до 20 штук.
+function renderClinicsPaginated(){
+  const selected = [];
+  const rest = [];
+  clinicsAllResults.forEach(c => {
+    if (selectedForMerge.has(c._id)) selected.push(c);
+    else rest.push(c);
+  });
+  const ordered = [...selected, ...rest];
+
+  const totalPages = Math.max(1, Math.ceil(ordered.length / clinicsLimit));
+  if (clinicsPage > totalPages) clinicsPage = totalPages;
+  const startIdx = (clinicsPage - 1) * clinicsLimit;
+  lastClinicsList = ordered.slice(startIdx, startIdx + clinicsLimit);
+
+  renderClinicRows();
+  updatePaginationControls(ordered.length);
+}
+
+function updatePaginationControls(totalCount){
+  const pagEl = document.getElementById("clinicsPagination");
+  const totalPages = Math.max(1, Math.ceil(totalCount / clinicsLimit));
+  const pageInput = document.getElementById("clinicsPageInput");
+  pageInput.value = clinicsPage;
+  pageInput.max = totalPages;
+  document.getElementById("clinicsTotalPages").textContent = totalPages;
+  document.getElementById("clinicsPrevBtn").disabled = clinicsPage <= 1;
+  document.getElementById("clinicsNextBtn").disabled = clinicsPage >= totalPages;
+  pagEl.hidden = false;
+}
+
+// В клиентском режиме смена страницы/выбора не требует нового запроса —
+// просто пересчитываем срез уже загруженных данных.
+function refreshClinicsView(){
+  if (clinicsAllResults){
+    renderClinicsPaginated();
+  } else {
+    renderClinicRows();
+  }
+}
+
+function renderClinicRows(){
+  const listEl = document.getElementById("clinicsList");
+
+  listEl.innerHTML = lastClinicsList.map(c => {
+    const records = c.records || [];
+    const vaccineNames = records.map(r => r.vaccine).filter(Boolean).slice(0, 3).join(", ");
+    const more = records.length > 3 ? ` +${records.length - 3}` : "";
+    const metaParts = [c.city, c.address].filter(Boolean).join(" — ");
+    return `
+      <div class="clinic-row" data-clinic="${c._id}">
+        <input type="checkbox" class="clinic-checkbox" data-clinic-checkbox="${c._id}" ${selectedForMerge.has(c._id) ? "checked" : ""} aria-label="Выбрать для объединения">
+        <div class="info">
+          <p class="name">${escapeHtml(c.clinic)}</p>
+          <p class="meta">${escapeHtml(metaParts)}${vaccineNames ? " · " + escapeHtml(vaccineNames) + more : ""}</p>
+        </div>
+        <span class="records-badge">${records.length} ${pluralizeRu(records.length, ["вакцина","вакцины","вакцин"])}</span>
+      </div>
+    `;
+  }).join("");
+
+  listEl.querySelectorAll("[data-clinic]").forEach(row => {
+    row.addEventListener("click", () => openClinicModal(row.dataset.clinic));
+  });
+  listEl.querySelectorAll("[data-clinic-checkbox]").forEach(cb => {
+    cb.addEventListener("click", (e) => e.stopPropagation());
+    cb.addEventListener("change", () => {
+      const id = cb.dataset.clinicCheckbox;
+      if (cb.checked) selectedForMerge.add(id);
+      else selectedForMerge.delete(id);
+      updateMergeBar();
+      refreshClinicsView();
+    });
+  });
+}
+
+document.getElementById("clinicsSearchBtn").addEventListener("click", () => loadClinics(1));
+[document.getElementById("clinicsSearchInput"), document.getElementById("clinicsCityInput"), document.getElementById("clinicsVaccineInput")].forEach(input => {
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") loadClinics(1); });
+});
+
+function clinicsTotalPagesCount(){
+  const count = clinicsAllResults ? clinicsAllResults.length : clinicsTotal;
+  return Math.max(1, Math.ceil(count / clinicsLimit));
+}
+
+function goToClinicsPage(page){
+  if (clinicsAllResults){
+    clinicsPage = page;
+    renderClinicsPaginated();
+  } else {
+    loadClinics(page);
+  }
+}
+
+document.getElementById("clinicsPrevBtn").addEventListener("click", () => { if (clinicsPage > 1) goToClinicsPage(clinicsPage - 1); });
+document.getElementById("clinicsNextBtn").addEventListener("click", () => {
+  if (clinicsPage < clinicsTotalPagesCount()) goToClinicsPage(clinicsPage + 1);
+});
+
+function goToTypedPage(){
+  const pageInput = document.getElementById("clinicsPageInput");
+  const totalPages = clinicsTotalPagesCount();
+  let page = parseInt(pageInput.value, 10);
+  if (isNaN(page)) page = clinicsPage;
+  page = Math.min(Math.max(1, page), totalPages);
+  if (page !== clinicsPage) goToClinicsPage(page);
+  else pageInput.value = clinicsPage;
+}
+document.getElementById("clinicsPageInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") goToTypedPage();
+});
+document.getElementById("clinicsPageInput").addEventListener("blur", goToTypedPage);
+
+// ---- merge duplicates ----
+function updateMergeBar(){
+  const bar = document.getElementById("mergeBar");
+  const text = document.getElementById("mergeBarText");
+  if (selectedForMerge.size >= 2){
+    bar.hidden = false;
+    text.textContent = `Выбрано клиник: ${selectedForMerge.size}`;
+  } else {
+    bar.hidden = true;
+  }
+}
+
+document.getElementById("mergeBarClearBtn").addEventListener("click", () => {
+  selectedForMerge.clear();
+  updateMergeBar();
+  refreshClinicsView();
+});
+
+document.getElementById("mergeBarMergeBtn").addEventListener("click", () => {
+  const ids = [...selectedForMerge];
+  const clinics = ids.map(id => currentClinicsById[id]).filter(Boolean);
+  if (clinics.length < 2){
+    showToast("Выбранные клиники не найдены на текущей странице — уточните выбор.");
+    return;
+  }
+
+  const list = document.getElementById("mergeOptionsList");
+  list.innerHTML = clinics.map((c, i) => `
+    <label class="merge-option">
+      <input type="radio" name="mergeTarget" value="${c._id}" ${i === 0 ? "checked" : ""}>
+      <div class="info">
+        <div class="name">${escapeHtml(c.clinic)}</div>
+        <div class="meta">${escapeHtml([c.city, c.address].filter(Boolean).join(" — "))} · ${(c.records || []).length} ${pluralizeRu((c.records || []).length, ["вакцина","вакцины","вакцин"])}</div>
+      </div>
+    </label>
+  `).join("");
+
+  document.getElementById("mergeModalBackdrop").hidden = false;
+  document.body.classList.add("modal-open");
+});
+
+function closeMergeModal(){
+  document.getElementById("mergeModalBackdrop").hidden = true;
+  document.body.classList.remove("modal-open");
+}
+document.getElementById("mergeModalClose").addEventListener("click", closeMergeModal);
+document.getElementById("mergeModalCancelBtn").addEventListener("click", closeMergeModal);
+document.getElementById("mergeModalBackdrop").addEventListener("click", (e) => {
+  if (e.target.id === "mergeModalBackdrop") closeMergeModal();
+});
+
+document.getElementById("mergeModalConfirmBtn").addEventListener("click", async () => {
+  const targetRadio = document.querySelector('input[name="mergeTarget"]:checked');
+  if (!targetRadio) return;
+  const targetId = targetRadio.value;
+  const sourceIds = [...selectedForMerge].filter(id => id !== targetId);
+
+  const btn = document.getElementById("mergeModalConfirmBtn");
+  btn.disabled = true;
+  try {
+    const result = await apiFetch("/api/admin/clinics/merge", {
+      method: "POST",
+      body: JSON.stringify({ targetId, sourceIds }),
+    });
+    showToast(`Объединено клиник: ${result.mergedClinics}, перенесено записей: ${result.movedRecords}`);
+    closeMergeModal();
+    selectedForMerge.clear();
+    loadClinics(clinicsPage);
+    loadAnalytics();
+  } catch (e){
+    showToast("Ошибка: " + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ---- clinic edit modal ----
+const clinicModal = document.getElementById("clinicModalBackdrop");
+let editingClinicId = null;
+
+function openClinicModal(clinicId){
+  const clinic = currentClinicsById[clinicId];
+  if (!clinic) return;
+  editingClinicId = clinicId;
+
+  document.getElementById("editClinicName").value = clinic.clinic || "";
+  document.getElementById("editClinicCity").value = clinic.city || "";
+  document.getElementById("editClinicLocation").value = clinic.location || "";
+  document.getElementById("editClinicAddress").value = clinic.address || "";
+
+  renderClinicRecords(clinic.records || []);
+
+  clinicModal.hidden = false;
+  document.body.classList.add("modal-open");
+}
+
+function closeClinicModal(){
+  clinicModal.hidden = true;
+  document.body.classList.remove("modal-open");
+  editingClinicId = null;
+}
+document.getElementById("clinicModalClose").addEventListener("click", closeClinicModal);
+document.getElementById("clinicModalCancelBtn").addEventListener("click", closeClinicModal);
+clinicModal.addEventListener("click", (e) => { if (e.target === clinicModal) closeClinicModal(); });
+
+document.getElementById("clinicModalSaveBtn").addEventListener("click", async () => {
+  if (!editingClinicId) return;
+  const btn = document.getElementById("clinicModalSaveBtn");
+  btn.disabled = true;
+  try {
+    await apiFetch(`/api/admin/clinics/${editingClinicId}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        clinic: document.getElementById("editClinicName").value.trim(),
+        city: document.getElementById("editClinicCity").value.trim(),
+        location: document.getElementById("editClinicLocation").value.trim() || null,
+        address: document.getElementById("editClinicAddress").value.trim(),
+      }),
+    });
+    showToast("Клиника обновлена");
+    closeClinicModal();
+    loadClinics(clinicsPage);
+  } catch (e){
+    showToast("Ошибка: " + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+document.getElementById("clinicDeleteBtn").addEventListener("click", () => {
+  if (!editingClinicId) return;
+  const clinic = currentClinicsById[editingClinicId];
+  showConfirm(
+    `Клиника «${clinic.clinic}» будет удалена вместе со всеми её записями о вакцинах.`,
+    async () => {
+      try {
+        await apiFetch(`/api/admin/clinics/${editingClinicId}`, { method: "DELETE" });
+        showToast("Клиника удалена");
+        closeClinicModal();
+        loadClinics(clinicsPage);
+        loadAnalytics();
+      } catch (e){
+        showToast("Ошибка: " + e.message);
+      }
+    }
+  );
+});
+
+function renderClinicRecords(records){
+  const wrap = document.getElementById("clinicRecordsList");
+  if (records.length === 0){
+    wrap.innerHTML = `<div class="list-placeholder">У этой клиники пока нет записей о вакцинах.</div>`;
+    return;
+  }
+  wrap.innerHTML = records.map(r => `
+    <div class="record-item">
+      <div class="rhead">
+        <div>
+          <div class="rname">${escapeHtml(r.vaccine)}${r.category ? " · " + escapeHtml(r.category) : ""}</div>
+          <p class="rmeta">${fmtPrice(r.vaccinePrice) || "цена не указана"}${r.visitPrice != null && r.visitPrice !== "" ? " · приём: " + fmtPrice(r.visitPrice) : ""} · ${r.confirmationCount} подтв.</p>
+        </div>
+        <div class="ractions">
+          <button class="icon-btn" data-edit-record="${r._id}" aria-label="Редактировать">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="icon-btn danger" data-delete-record="${r._id}" aria-label="Удалить">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-8 0l1 13a1 1 0 001 1h6a1 1 0 001-1l1-13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="record-edit-form" id="recordEditForm-${r._id}" hidden></div>
+    </div>
+  `).join("");
+
+  wrap.querySelectorAll("[data-edit-record]").forEach(btn => {
+    btn.addEventListener("click", () => toggleRecordEdit(btn.dataset.editRecord, records));
+  });
+  wrap.querySelectorAll("[data-delete-record]").forEach(btn => {
+    btn.addEventListener("click", () => confirmDeleteRecord(btn.dataset.deleteRecord));
+  });
+}
+
+function toggleRecordEdit(recordId, records){
+  const form = document.getElementById(`recordEditForm-${recordId}`);
+  const record = records.find(r => r._id === recordId);
+  if (!record) return;
+
+  if (!form.hidden){
+    form.hidden = true;
+    form.innerHTML = "";
+    return;
+  }
+
+  form.hidden = false;
+  form.innerHTML = `
+    <label>Вакцина</label>
+    <input id="rf-vaccine-${recordId}" value="${escapeHtml(record.vaccine || "")}">
+    <label>Категория</label>
+    <input id="rf-category-${recordId}" value="${escapeHtml(record.category || "")}">
+    <div class="field-row">
+      <div>
+        <label>Стоимость вакцины</label>
+        <input id="rf-vprice-${recordId}" value="${record.vaccinePrice ?? ""}">
+      </div>
+      <div>
+        <label>Стоимость приёма</label>
+        <input id="rf-visitprice-${recordId}" value="${record.visitPrice ?? ""}">
+      </div>
+    </div>
+    <label>Примечание</label>
+    <textarea id="rf-note-${recordId}" rows="2">${escapeHtml(record.note || "")}</textarea>
+    <div class="record-edit-actions">
+      <button class="btn-cancel" id="rf-cancel-${recordId}">Отмена</button>
+      <button class="btn-save" id="rf-save-${recordId}">Сохранить</button>
+    </div>
+  `;
+
+  document.getElementById(`rf-cancel-${recordId}`).addEventListener("click", () => {
+    form.hidden = true;
+    form.innerHTML = "";
+  });
+  document.getElementById(`rf-save-${recordId}`).addEventListener("click", () => saveRecordEdit(recordId));
+}
+
+function parsePriceField(raw){
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const num = Number(trimmed);
+  return isNaN(num) ? trimmed : num;
+}
+
+async function saveRecordEdit(recordId){
+  const btn = document.getElementById(`rf-save-${recordId}`);
+  btn.disabled = true;
+  try {
+    await apiFetch(`/api/admin/records/${recordId}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        vaccine: document.getElementById(`rf-vaccine-${recordId}`).value.trim(),
+        category: document.getElementById(`rf-category-${recordId}`).value.trim() || null,
+        vaccinePrice: parsePriceField(document.getElementById(`rf-vprice-${recordId}`).value),
+        visitPrice: parsePriceField(document.getElementById(`rf-visitprice-${recordId}`).value),
+        note: document.getElementById(`rf-note-${recordId}`).value.trim() || null,
+      }),
+    });
+    showToast("Запись обновлена");
+    await refreshOpenClinicModal();
+  } catch (e){
+    showToast("Ошибка: " + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function confirmDeleteRecord(recordId){
+  showConfirm(
+    "Эта запись о вакцине будет удалена.",
+    async () => {
+      try {
+        await apiFetch(`/api/admin/records/${recordId}`, { method: "DELETE" });
+        showToast("Запись удалена");
+        await refreshOpenClinicModal();
+        loadAnalytics();
+      } catch (e){
+        showToast("Ошибка: " + e.message);
+      }
+    }
+  );
+}
+
+// Данные клиники в модалке могли устареть после правки/удаления записи —
+// перезагружаем список и заново открываем ту же клинику из свежих данных.
+async function refreshOpenClinicModal(){
+  const id = editingClinicId;
+  if (!id) return;
+  await loadClinics(clinicsPage);
+  if (currentClinicsById[id]){
+    openClinicModal(id);
+  } else {
+    closeClinicModal();
+  }
+}
+
+// ---- generic confirm modal ----
+const confirmModal = document.getElementById("confirmModalBackdrop");
+let confirmCallback = null;
+
+function showConfirm(text, onConfirm){
+  document.getElementById("confirmModalText").textContent = text;
+  confirmCallback = onConfirm;
+  confirmModal.hidden = false;
+  document.body.classList.add("modal-open");
+}
+function closeConfirm(){
+  confirmModal.hidden = true;
+  if (clinicModal.hidden) document.body.classList.remove("modal-open");
+  confirmCallback = null;
+}
+document.getElementById("confirmModalClose").addEventListener("click", closeConfirm);
+document.getElementById("confirmModalCancelBtn").addEventListener("click", closeConfirm);
+confirmModal.addEventListener("click", (e) => { if (e.target === confirmModal) closeConfirm(); });
+document.getElementById("confirmModalConfirmBtn").addEventListener("click", async () => {
+  const cb = confirmCallback;
+  closeConfirm();
+  if (cb) await cb();
+});
+
 function loadAll(){
   loadAnalytics();
   loadEmptyQueries();
   loadPending();
+  loadClinics(1);
+}
+
+// ---- tabs ----
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+});
+function switchTab(tab){
+  document.querySelectorAll(".tab-btn").forEach(b => {
+    const active = b.dataset.tab === tab;
+    b.classList.toggle("active", active);
+    b.setAttribute("aria-selected", active ? "true" : "false");
+  });
+  document.querySelectorAll(".tab-panel").forEach(p => {
+    p.hidden = p.dataset.tabPanel !== tab;
+  });
 }
 </script>
 </body>
