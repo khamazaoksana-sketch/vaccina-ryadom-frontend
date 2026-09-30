@@ -229,6 +229,15 @@ body.modal-open{overflow:hidden;}
 .record-edit-form input, .record-edit-form textarea{margin-bottom:8px;}
 .record-edit-actions{display:flex; gap:8px;}
 .record-edit-actions button{flex:1; padding:8px; font-size:13px; border-radius:7px;}
+
+.record-history{margin-top:10px; padding-top:10px; border-top:1px solid var(--border);}
+.history-label{font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.03em; margin-bottom:8px;}
+.confirmation-item{background:var(--surface); border:1px solid var(--border); border-radius:9px; padding:10px; margin-bottom:6px;}
+.confirmation-item .chead{display:flex; justify-content:space-between; align-items:center; gap:8px;}
+.confirmation-item .cdate{font-size:12.5px; font-weight:600;}
+.confirmation-item .cmeta{font-size:12px; color:var(--ink-soft); margin:3px 0 0;}
+.confirmation-edit-form{margin-top:8px; padding-top:8px; border-top:1px solid var(--border);}
+.confirmation-edit-form input, .confirmation-edit-form textarea{margin-bottom:8px;}
 .confirm-text{font-size:13.5px; color:var(--ink-soft); margin:0 0 20px;}
 .confirm-text strong{color:var(--ink);}
 
@@ -999,6 +1008,9 @@ function renderClinicRecords(records){
           <p class="rmeta">${fmtPrice(r.vaccinePrice) || "цена не указана"}${r.visitPrice != null && r.visitPrice !== "" ? " · приём: " + fmtPrice(r.visitPrice) : ""} · ${r.confirmationCount} подтв.</p>
         </div>
         <div class="ractions">
+          <button class="icon-btn" data-history-record="${r._id}" aria-label="История подтверждений">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
           <button class="icon-btn" data-edit-record="${r._id}" aria-label="Редактировать">
             <svg viewBox="0 0 24 24" fill="none"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
           </button>
@@ -1008,15 +1020,156 @@ function renderClinicRecords(records){
         </div>
       </div>
       <div class="record-edit-form" id="recordEditForm-${r._id}" hidden></div>
+      <div class="record-history" id="recordHistory-${r._id}" hidden></div>
     </div>
   `).join("");
 
+  wrap.querySelectorAll("[data-history-record]").forEach(btn => {
+    btn.addEventListener("click", () => toggleRecordHistory(btn.dataset.historyRecord));
+  });
   wrap.querySelectorAll("[data-edit-record]").forEach(btn => {
     btn.addEventListener("click", () => toggleRecordEdit(btn.dataset.editRecord, records));
   });
   wrap.querySelectorAll("[data-delete-record]").forEach(btn => {
     btn.addEventListener("click", () => confirmDeleteRecord(btn.dataset.deleteRecord));
   });
+}
+
+// ---- История отдельных подтверждений записи ----
+async function toggleRecordHistory(recordId){
+  const panel = document.getElementById(`recordHistory-${recordId}`);
+  if (!panel.hidden){
+    panel.hidden = true;
+    panel.innerHTML = "";
+    return;
+  }
+  panel.hidden = false;
+  panel.innerHTML = `<div class="list-placeholder">Загрузка…</div>`;
+  try {
+    const confirmations = await apiFetch(`/api/admin/records/${recordId}/confirmations`);
+    renderConfirmationHistory(recordId, confirmations);
+  } catch (e){
+    panel.innerHTML = `<div class="list-placeholder">Не удалось загрузить историю: ${e.message}</div>`;
+  }
+}
+
+function renderConfirmationHistory(recordId, confirmations){
+  const panel = document.getElementById(`recordHistory-${recordId}`);
+  if (confirmations.length === 0){
+    panel.innerHTML = `<div class="list-placeholder">Отдельных подтверждений нет — цена/дата у этой записи взяты из данных до появления этой функции.</div>`;
+    return;
+  }
+
+  panel.innerHTML = `<div class="history-label">История подтверждений</div>` + confirmations.map(c => `
+    <div class="confirmation-item">
+      <div class="chead">
+        <span class="cdate">${fmtDate(c.confirmedAt)}</span>
+        <div class="ractions">
+          <button class="icon-btn" data-edit-confirmation="${c._id}" aria-label="Редактировать подтверждение">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="icon-btn danger" data-delete-confirmation="${c._id}" aria-label="Удалить подтверждение">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-8 0l1 13a1 1 0 001 1h6a1 1 0 001-1l1-13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <p class="cmeta">${fmtPrice(c.vaccinePrice) || "цена не указана"}${c.visitPrice != null && c.visitPrice !== "" ? " · приём: " + fmtPrice(c.visitPrice) : ""}${c.note ? " · " + escapeHtml(c.note) : ""}</p>
+      <div class="confirmation-edit-form" id="cfForm-${c._id}" hidden></div>
+    </div>
+  `).join("");
+
+  panel.querySelectorAll("[data-edit-confirmation]").forEach(btn => {
+    btn.addEventListener("click", () => toggleConfirmationEdit(btn.dataset.editConfirmation, confirmations, recordId));
+  });
+  panel.querySelectorAll("[data-delete-confirmation]").forEach(btn => {
+    btn.addEventListener("click", () => confirmDeleteConfirmation(btn.dataset.deleteConfirmation, recordId));
+  });
+}
+
+function toggleConfirmationEdit(confirmationId, confirmations, recordId){
+  const form = document.getElementById(`cfForm-${confirmationId}`);
+  const confirmation = confirmations.find(c => c._id === confirmationId);
+  if (!confirmation) return;
+
+  if (!form.hidden){
+    form.hidden = true;
+    form.innerHTML = "";
+    return;
+  }
+
+  form.hidden = false;
+  form.innerHTML = `
+    <div class="field-row">
+      <div>
+        <label>Стоимость вакцины</label>
+        <input id="cf-vprice-${confirmationId}" value="${confirmation.vaccinePrice ?? ""}">
+      </div>
+      <div>
+        <label>Стоимость приёма</label>
+        <input id="cf-visitprice-${confirmationId}" value="${confirmation.visitPrice ?? ""}">
+      </div>
+    </div>
+    <label>Дата подтверждения</label>
+    <input id="cf-date-${confirmationId}" type="date" value="${confirmation.confirmedAt ? new Date(confirmation.confirmedAt).toISOString().slice(0, 10) : ""}">
+    <label>Примечание</label>
+    <textarea id="cf-note-${confirmationId}" rows="2">${escapeHtml(confirmation.note || "")}</textarea>
+    <div class="record-edit-actions">
+      <button class="btn-cancel" id="cf-cancel-${confirmationId}">Отмена</button>
+      <button class="btn-save" id="cf-save-${confirmationId}">Сохранить</button>
+    </div>
+  `;
+
+  document.getElementById(`cf-cancel-${confirmationId}`).addEventListener("click", () => {
+    form.hidden = true;
+    form.innerHTML = "";
+  });
+  document.getElementById(`cf-save-${confirmationId}`).addEventListener("click", () => saveConfirmationEdit(confirmationId, recordId));
+}
+
+async function saveConfirmationEdit(confirmationId, recordId){
+  const btn = document.getElementById(`cf-save-${confirmationId}`);
+  btn.disabled = true;
+  try {
+    await apiFetch(`/api/admin/confirmations/${confirmationId}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        vaccinePrice: parsePriceField(document.getElementById(`cf-vprice-${confirmationId}`).value),
+        visitPrice: parsePriceField(document.getElementById(`cf-visitprice-${confirmationId}`).value),
+        note: document.getElementById(`cf-note-${confirmationId}`).value.trim() || null,
+        confirmedAt: document.getElementById(`cf-date-${confirmationId}`).value || undefined,
+      }),
+    });
+    showToast("Подтверждение обновлено");
+    await reopenClinicModalKeepingHistory(recordId);
+  } catch (e){
+    showToast("Ошибка: " + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function confirmDeleteConfirmation(confirmationId, recordId){
+  showConfirm(
+    "Это отдельное подтверждение будет удалено, остальная история записи не изменится.",
+    async () => {
+      try {
+        await apiFetch(`/api/admin/confirmations/${confirmationId}`, { method: "DELETE" });
+        showToast("Подтверждение удалено");
+        await reopenClinicModalKeepingHistory(recordId);
+        loadAnalytics();
+      } catch (e){
+        showToast("Ошибка: " + e.message);
+      }
+    }
+  );
+}
+
+// После правки/удаления подтверждения обновляем и клинику (агрегаты у
+// записи могли измениться), и заново открываем историю этой же записи, раз
+// админ явно с ней работает.
+async function reopenClinicModalKeepingHistory(recordId){
+  await refreshOpenClinicModal();
+  await toggleRecordHistory(recordId);
 }
 
 function toggleRecordEdit(recordId, records){
@@ -1048,6 +1201,9 @@ function toggleRecordEdit(recordId, records){
     </div>
     <label>Примечание</label>
     <textarea id="rf-note-${recordId}" rows="2">${escapeHtml(record.note || "")}</textarea>
+    <label>Наследный счётчик подтверждений <span style="font-weight:400; color:var(--ink-muted);">(до появления истории, см. ниже)</span></label>
+    <input id="rf-legacycount-${recordId}" type="number" min="0" step="1" value="${record.legacyConfirmationCount ?? record.confirmationCount ?? 0}">
+    <p style="font-size:11.5px; color:var(--ink-muted); margin:-4px 0 10px;">Цена здесь правит самое свежее подтверждение (или этот наследный снимок, если отдельной истории ещё нет). Чтобы поправить/удалить конкретное подтверждение из истории — кнопка "История" (часы) рядом с этой записью.</p>
     <div class="record-edit-actions">
       <button class="btn-cancel" id="rf-cancel-${recordId}">Отмена</button>
       <button class="btn-save" id="rf-save-${recordId}">Сохранить</button>
@@ -1080,6 +1236,7 @@ async function saveRecordEdit(recordId){
         vaccinePrice: parsePriceField(document.getElementById(`rf-vprice-${recordId}`).value),
         visitPrice: parsePriceField(document.getElementById(`rf-visitprice-${recordId}`).value),
         note: document.getElementById(`rf-note-${recordId}`).value.trim() || null,
+        legacyConfirmationCount: document.getElementById(`rf-legacycount-${recordId}`).value.trim(),
       }),
     });
     showToast("Запись обновлена");
