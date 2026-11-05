@@ -67,6 +67,7 @@ body{
 }
 h1,h2,h3{font-family:'Inter',system-ui,sans-serif; margin:0; color:var(--ink);}
 a{color:var(--brand-dark);}
+.vaccine-line{display:inline-block; margin:3px 0 5px; padding:2px 9px; font-size:11px; font-weight:500; line-height:1.4; color:var(--brand-dark); background:rgba(31,111,92,0.10); border-radius:999px;}
 button{font-family:inherit; cursor:pointer;}
 input{font-family:inherit;}
 :focus-visible{outline:2px solid var(--brand); outline-offset:2px;}
@@ -342,6 +343,7 @@ body.modal-open{overflow:hidden;}
         <p class="detail-loc" id="dLoc"></p>
 
         <div class="detail-rows">
+          <div class="row" id="dVaccineRow"><span class="k">Вакцина</span><span class="v" id="dVaccine"></span></div>
           <div class="row"><span class="k">Последнее подтверждение</span><span class="v" id="dDate"></span></div>
           <div class="row"><span class="k">Подтверждений</span><span class="v" id="dCount"></span></div>
           <div class="row"><span class="k">Стоимость вакцины</span><span class="v" id="dVaccinePrice"></span></div>
@@ -631,6 +633,7 @@ function renderList(){
         <p class="name">${r["Клиника"]}</p>
         <span class="pill ${PILL_CLASS[r["Свежесть"]]}">${r["Свежесть"]}</span>
       </div>
+      ${r["Вакцина"] ? `<p class="vaccine-line">${r["Вакцина"]}</p>` : ""}
       <p class="meta">${r["Локация"] || r["Город"] || ""} — ${fmtDate(r["Дата_подтверждения"])}, ${r["Число_подтверждений"]} подтв.</p>
     `;
     card.addEventListener("click", () => openDetail(i));
@@ -683,6 +686,9 @@ function openDetail(i){
     document.getElementById("dDate").textContent =
       exact && !rel.includes("дн.") && rel !== "сегодня" && rel !== "вчера" ? `${rel} (${exact.replace(" назад","")})` : rel;
   }
+  const vaccineRow = document.getElementById("dVaccineRow");
+  if (r["Вакцина"]){ vaccineRow.style.display = "flex"; document.getElementById("dVaccine").textContent = r["Вакцина"]; }
+  else vaccineRow.style.display = "none";
   document.getElementById("dCount").textContent = r["Число_подтверждений"];
   document.getElementById("dVaccinePrice").textContent = fmtPrice(r["Стоимость_вакцины"]);
   document.getElementById("dVisitPrice").textContent = fmtPrice(r["Стоимость_приема"]);
