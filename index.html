@@ -466,6 +466,16 @@ function fmtPrice(v){
   return String(v);
 }
 
+// Точное число дней с даты подтверждения для карточки: "56 дн. назад"
+function fmtDaysAgo(dateStr){
+  if (!dateStr) return "";
+  const days = Math.floor((new Date() - new Date(dateStr)) / (1000*60*60*24));
+  if (days < 0) return "";
+  if (days === 0) return "сегодня";
+  if (days === 1) return "1 дн. назад";
+  return days + " дн. назад";
+}
+
 function fmtDate(dateStr){
   if (!dateStr) return "—";
   const d = new Date(dateStr);
@@ -666,7 +676,13 @@ function openDetail(i){
   pill.textContent = r["Свежесть"];
   pill.className = "pill " + PILL_CLASS[r["Свежесть"]];
 
-  document.getElementById("dDate").textContent = fmtDate(r["Дата_подтверждения"]);
+  {
+    const rel = fmtDate(r["Дата_подтверждения"]);
+    const exact = fmtDaysAgo(r["Дата_подтверждения"]);
+    // если относительная подпись уже в днях ("5 дн. назад"), не дублируем
+    document.getElementById("dDate").textContent =
+      exact && !rel.includes("дн.") && rel !== "сегодня" && rel !== "вчера" ? `${rel} (${exact.replace(" назад","")})` : rel;
+  }
   document.getElementById("dCount").textContent = r["Число_подтверждений"];
   document.getElementById("dVaccinePrice").textContent = fmtPrice(r["Стоимость_вакцины"]);
   document.getElementById("dVisitPrice").textContent = fmtPrice(r["Стоимость_приема"]);
