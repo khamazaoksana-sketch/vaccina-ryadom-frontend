@@ -132,15 +132,15 @@ input{font-family:inherit;}
   padding:8px 10px; box-shadow:none; border-radius:10px; gap:10px;
 }
 .search-bar.compact .field label{display:none;}
-.search-bar.compact .field input{padding:8px 10px; font-size:13.5px;}
+.search-bar.compact .field input, .search-bar.compact .field select{padding:8px 10px; font-size:13.5px;}
 .search-bar.compact button[type=submit]{padding:9px 16px; font-size:13.5px;}
 .field{flex:1; min-width:180px; display:flex; flex-direction:column; gap:6px;}
 .field label{font-size:13px; color:var(--ink-soft); font-weight:500;}
-.field input{
+.field input, .field select{
   padding:10px 12px; border:1px solid var(--border-strong); border-radius:8px;
   font-size:14px; background:var(--bg); color:var(--ink); width:100%;
 }
-.field input:focus{background:var(--surface);}
+.field input:focus, .field select:focus{background:var(--surface);}
 
 .ac-wrap{position:relative;}
 .ac-list{
@@ -250,7 +250,7 @@ body.modal-open{overflow:hidden;}
 .modal h3{font-size:17px; font-weight:600; margin:0 6px 6px 0; padding-right:24px;}
 .modal-sub{font-size:13px; color:var(--ink-soft); margin:0 0 16px;}
 .modal label{font-size:13px; color:var(--ink-soft); display:block; margin-bottom:6px; font-weight:500;}
-.modal input, .modal textarea{width:100%; padding:10px 12px; border:1px solid var(--border-strong); border-radius:8px; font-size:14px; margin-bottom:14px; font-family:inherit;}
+.modal input, .modal textarea, .modal select{width:100%; padding:10px 12px; border:1px solid var(--border-strong); border-radius:8px; font-size:14px; margin-bottom:14px; font-family:inherit;}
 .modal textarea{resize:vertical;}
 .modal input[type=number]::-webkit-outer-spin-button,
 .modal input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
@@ -380,6 +380,10 @@ body.modal-open{overflow:hidden;}
 
 <form id="searchForm" class="search-bar" autocomplete="off">
   <div class="field">
+    <label for="categoryInput">Категория</label>
+    <select id="categoryInput" disabled><option value="">Загрузка категорий…</option></select>
+  </div>
+  <div class="field">
     <label for="vaccineInput">Вакцина</label>
     <div class="ac-wrap">
       <input id="vaccineInput" placeholder="Например, Варилрикс" autocomplete="off">
@@ -395,6 +399,10 @@ body.modal-open{overflow:hidden;}
   </div>
   <button type="submit">Найти клиники</button>
 </form>
+<div id="catalogueError" role="alert" hidden style="padding:12px;text-align:center">
+  Не удалось загрузить справочник. Поиск по названию и городу доступен.
+  <button id="retryCatalogueBtn" type="button">Повторить загрузку</button>
+</div>
 
 <div class="modal-backdrop" id="modalBackdrop" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -413,11 +421,10 @@ body.modal-open{overflow:hidden;}
         <input id="newClinicNameInput" placeholder="Например, Детская поликлиника №5">
 
         <div id="newEntryRevealFields">
+          <label for="newCategoryInput">Категория</label>
+          <select id="newCategoryInput" required disabled><option value="">Выберите категорию</option></select>
           <label for="newVaccineInput">Вакцина</label>
-          <div class="ac-wrap">
-            <input id="newVaccineInput" placeholder="Например, Варилрикс" autocomplete="off">
-            <ul class="ac-list" id="newVaccineAcList" hidden></ul>
-          </div>
+          <select id="newVaccineInput" required disabled><option value="">Сначала выберите категорию</option></select>
 
           <label for="newCityInput">Город</label>
           <div class="ac-wrap">
@@ -516,86 +523,133 @@ function mapClinicFromApi(c){
 
 let VACCINES = [];
 let CITIES = [];
+let CATEGORIES = [];
+
+function fillSelect(select, options, placeholder){
+  const previous = select.value;
+  select.replaceChildren(new Option(placeholder, ""));
+  options.forEach(option => select.add(new Option(option.name, option.id)));
+  if (options.some(option => option.id === previous)) select.value = previous;
+}
+
+function vaccineOptions(categoryId, forNewEntry = false){
+  return VACCINES.filter(option => (!categoryId || option.categoryIds.includes(categoryId)) &&
+    (!forNewEntry || option.allowNewSubmission));
+}
+
+function updateNewVaccineOptions(){
+  const categoryId = document.getElementById("newCategoryInput").value;
+  const select = document.getElementById("newVaccineInput");
+  fillSelect(select, categoryId ? vaccineOptions(categoryId, true) : [],
+    categoryId ? "Выберите вакцину" : "Сначала выберите категорию");
+  select.disabled = !categoryId;
+  updateSubmitState();
+}
 
 async function buildOptionLists(){
-  try {
-    const [vaccines, cities] = await Promise.all([
-      fetch(`${API_BASE}/api/vaccines`).then(r => r.json()),
-      fetch(`${API_BASE}/api/cities`).then(r => r.json()),
-    ]);
-    VACCINES.length = 0; VACCINES.push(...vaccines);
-    CITIES.length = 0; CITIES.push(...cities);
-  } catch (e){
-    console.error("Не удалось загрузить списки вакцин/городов:", e);
+  const readJson = async url => {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Ошибка загрузки (${response.status})`);
+    return response.json();
+  };
+  const [catalogue, cities] = await Promise.allSettled([
+    readJson(`${API_BASE}/api/vaccine-catalog`),
+    readJson(`${API_BASE}/api/cities`),
+  ]);
+  if (catalogue.status === "fulfilled" && Array.isArray(catalogue.value.categories) && Array.isArray(catalogue.value.vaccines)){
+    CATEGORIES = catalogue.value.categories;
+    VACCINES = catalogue.value.vaccines;
+    const searchSelect = document.getElementById("categoryInput");
+    const newSelect = document.getElementById("newCategoryInput");
+    fillSelect(searchSelect, CATEGORIES, "Все категории");
+    fillSelect(newSelect, CATEGORIES, "Выберите категорию");
+    searchSelect.disabled = false;
+    newSelect.disabled = false;
+    updateNewVaccineOptions();
   }
+  if (cities.status === "fulfilled" && Array.isArray(cities.value)){
+    CITIES.length = 0; CITIES.push(...cities.value);
+  }
+  document.getElementById("catalogueError").hidden =
+    catalogue.status === "fulfilled" && Array.isArray(catalogue.value.categories) &&
+    Array.isArray(catalogue.value.vaccines) && cities.status === "fulfilled" && Array.isArray(cities.value);
 }
 
 function setupAutocomplete(inputEl, listEl, options){
   let activeIndex = -1;
-
+  let matches = [];
+  function choose(option){
+    inputEl.value = option.name;
+    inputEl.dataset.vaccineId = option.id || "";
+    listEl.hidden = true;
+    inputEl.dispatchEvent(new Event("change", { bubbles: true }));
+  }
   function renderOptions(query){
     const q = query.trim().toLowerCase();
-    const matches = q
-      ? options.filter(o => o.toLowerCase().includes(q))
-      : options.slice(0, 20);
-    listEl.innerHTML = "";
+    const values = (typeof options === "function" ? options() : options)
+      .map(option => typeof option === "string" ? { name: option } : option);
+    matches = values.filter(option => !q || option.name.toLowerCase().includes(q));
+    listEl.replaceChildren();
     activeIndex = -1;
-
-    if (matches.length === 0){
-      listEl.hidden = true;
-      return;
-    }
-    matches.forEach(opt => {
+    if (matches.length === 0){ listEl.hidden = true; return; }
+    matches.forEach(option => {
       const li = document.createElement("li");
       li.className = "ac-item";
-      li.textContent = opt;
-      li.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        inputEl.value = opt;
-        listEl.hidden = true;
-      });
+      li.textContent = option.name + (option.legacyNote ? " — " + option.legacyNote : "");
+      li.addEventListener("mousedown", e => { e.preventDefault(); choose(option); });
       listEl.appendChild(li);
     });
     listEl.hidden = false;
   }
-
-  inputEl.addEventListener("input", () => renderOptions(inputEl.value));
+  inputEl.addEventListener("input", () => {
+    delete inputEl.dataset.vaccineId;
+    renderOptions(inputEl.value);
+  });
   inputEl.addEventListener("focus", () => renderOptions(inputEl.value));
   inputEl.addEventListener("blur", () => { listEl.hidden = true; });
-
-  inputEl.addEventListener("keydown", (e) => {
+  inputEl.addEventListener("keydown", e => {
     const items = [...listEl.querySelectorAll(".ac-item")];
-    if (listEl.hidden || items.length === 0) return;
+    if (listEl.hidden || !items.length) return;
     if (e.key === "ArrowDown"){
-      e.preventDefault();
-      activeIndex = Math.min(activeIndex + 1, items.length - 1);
+      e.preventDefault(); activeIndex = Math.min(activeIndex + 1, items.length - 1);
     } else if (e.key === "ArrowUp"){
-      e.preventDefault();
-      activeIndex = Math.max(activeIndex - 1, 0);
+      e.preventDefault(); activeIndex = Math.max(activeIndex - 1, 0);
     } else if (e.key === "Enter" && activeIndex >= 0){
-      e.preventDefault();
-      inputEl.value = items[activeIndex].textContent;
-      listEl.hidden = true;
-      return;
+      e.preventDefault(); choose(matches[activeIndex]); return;
     } else if (e.key === "Escape"){
-      listEl.hidden = true;
-      return;
-    } else {
-      return;
-    }
+      listEl.hidden = true; return;
+    } else return;
     items.forEach((li, i) => li.classList.toggle("active", i === activeIndex));
   });
 }
+
+document.getElementById("categoryInput").addEventListener("change", () => {
+  const input = document.getElementById("vaccineInput");
+  input.value = "";
+  delete input.dataset.vaccineId;
+  document.getElementById("vaccineAcList").hidden = true;
+});
+document.getElementById("newCategoryInput").addEventListener("change", () => {
+  document.getElementById("newVaccineInput").value = "";
+  updateNewVaccineOptions();
+});
+document.getElementById("retryCatalogueBtn").addEventListener("click", buildOptionLists);
 
 // Реальный поиск через API вместо фильтрации локального массива.
 // Сортировку по свежести/дате теперь делает сам бэкенд (routes/search.js).
 async function search(vaccineQuery, cityQuery){
   const params = new URLSearchParams();
-  if (vaccineQuery.trim()) params.set("vaccine", vaccineQuery.trim());
+  const categoryId = document.getElementById("categoryInput").value;
+  const input = document.getElementById("vaccineInput");
+  const exact = vaccineOptions(categoryId).find(option => option.name.toLowerCase() === vaccineQuery.trim().toLowerCase());
+  const vaccineId = input.dataset.vaccineId || exact?.id;
+  if (categoryId) params.set("categoryId", categoryId);
+  if (vaccineId) params.set("vaccineId", vaccineId);
+  else if (vaccineQuery.trim()) params.set("vaccine", vaccineQuery.trim());
   if (cityQuery.trim()) params.set("city", cityQuery.trim());
 
   const res = await fetch(`${API_BASE}/api/search?${params.toString()}`);
-  if (!res.ok) throw new Error(`Сервер ответил с ошибкой (${res.status})`);
+  if (!res.ok) throw new Error((await res.json().catch(()=>({}))).error || `Сервер ответил с ошибкой (${res.status})`);
   const data = await res.json();
   return data.map(mapClinicFromApi);
 }
@@ -758,6 +812,7 @@ async function setHeroSub(){
 }
 
 function goHome(){
+  closeDetail();
   const form = document.getElementById("searchForm");
   form.classList.remove("compact");
   document.getElementById("searchSlot").appendChild(form);
@@ -780,10 +835,11 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const vaccine = document.getElementById("vaccineInput").value;
   const city = document.getElementById("cityInput").value;
-  if (!vaccine.trim() && !city.trim()){
+  if (!vaccine.trim() && !city.trim() && !document.getElementById("categoryInput").value){
     document.getElementById("vaccineInput").focus();
     return;
   }
+  closeDetail();
   selectedIndex = null;
   document.getElementById("detailPlaceholder").hidden = false;
   document.getElementById("clinicDetail").hidden = true;
@@ -810,7 +866,9 @@ function updateSubmitState(){
   let newFieldsOk = true;
   if (isNewEntry){
     newFieldsOk = ["newVaccineInput","newCityInput","newClinicNameInput","newAddressInput"]
-      .every(id => document.getElementById(id).value.trim().length > 0);
+      .every(id => document.getElementById(id).value.trim().length > 0) &&
+      Boolean(document.getElementById("newCategoryInput").value) &&
+      !document.getElementById("newVaccineInput").disabled;
   }
   const vaccinePriceOk = parsePriceInput(document.getElementById("vaccinePriceInput").value) !== null;
   const visitPriceOk = parsePriceInput(document.getElementById("visitPriceInput").value) !== null;
@@ -818,6 +876,7 @@ function updateSubmitState(){
 }
 ["newVaccineInput","newCityInput","newClinicNameInput","newAddressInput","vaccinePriceInput","visitPriceInput"].forEach(id => {
   document.getElementById(id).addEventListener("input", updateSubmitState);
+  document.getElementById(id).addEventListener("change", updateSubmitState);
 });
 
 function openConfirmModal(newEntry){
@@ -831,7 +890,17 @@ function openConfirmModal(newEntry){
   document.getElementById("commentInput").value = "";
 
   if (newEntry){
-    document.getElementById("newVaccineInput").value = document.getElementById("vaccineInput").value.trim();
+    const categoryId = document.getElementById("categoryInput").value;
+    const searchInput = document.getElementById("vaccineInput");
+    const candidate = VACCINES.find(option => option.id === searchInput.dataset.vaccineId) ||
+      VACCINES.find(option => option.name.toLowerCase() === searchInput.value.trim().toLowerCase());
+    document.getElementById("newCategoryInput").value = categoryId ||
+      (candidate?.allowNewSubmission && candidate.categoryIds.length === 1 ? candidate.categoryIds[0] : "");
+    document.getElementById("newVaccineInput").value = "";
+    updateNewVaccineOptions();
+    if (candidate?.allowNewSubmission && candidate.categoryIds.includes(document.getElementById("newCategoryInput").value)){
+      document.getElementById("newVaccineInput").value = candidate.id;
+    }
     document.getElementById("newCityInput").value = document.getElementById("cityInput").value.trim();
     document.getElementById("newClinicNameInput").value = "";
     document.getElementById("newAddressInput").value = "";
@@ -867,7 +936,9 @@ submitBtn.addEventListener("click", async () => {
   try {
     if (isNewEntry){
       const body = {
-        vaccine: document.getElementById("newVaccineInput").value.trim(),
+        categoryId: document.getElementById("newCategoryInput").value,
+        vaccineId: document.getElementById("newVaccineInput").value,
+        vaccine: VACCINES.find(option => option.id === document.getElementById("newVaccineInput").value)?.name || "",
         clinicName: document.getElementById("newClinicNameInput").value.trim(),
         city: document.getElementById("newCityInput").value.trim(),
         address: document.getElementById("newAddressInput").value.trim(),
@@ -896,8 +967,8 @@ submitBtn.addEventListener("click", async () => {
   } catch (err){
     showToast("Не удалось отправить: " + err.message);
   } finally {
-    submitBtn.disabled = false;
     submitBtn.textContent = "Отправить";
+    updateSubmitState();
   }
 });
 
@@ -918,9 +989,8 @@ document.getElementById("modalDoneBtn").addEventListener("click", () => {
 // загрузке (например, "холодный старт" бесплатного тарифа Render) страница
 // на секунду-другую показывает форму в её исходном, "сыром" месте в разметке.
 goHome();
-setupAutocomplete(document.getElementById("vaccineInput"), document.getElementById("vaccineAcList"), VACCINES);
+setupAutocomplete(document.getElementById("vaccineInput"), document.getElementById("vaccineAcList"), () => vaccineOptions(document.getElementById("categoryInput").value));
 setupAutocomplete(document.getElementById("cityInput"), document.getElementById("cityAcList"), CITIES);
-setupAutocomplete(document.getElementById("newVaccineInput"), document.getElementById("newVaccineAcList"), VACCINES);
 setupAutocomplete(document.getElementById("newCityInput"), document.getElementById("newCityAcList"), CITIES);
 
 // Списки вакцин/городов и общий счётчик подгружаются в фоне и не должны
