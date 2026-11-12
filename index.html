@@ -69,7 +69,7 @@ h1,h2,h3{font-family:'Inter',system-ui,sans-serif; margin:0; color:var(--ink);}
 a{color:var(--brand-dark);}
 .vaccine-line{display:inline-block; margin:3px 0 5px; padding:2px 9px; font-size:11px; font-weight:500; line-height:1.4; color:var(--brand-dark); background:rgba(31,111,92,0.10); border-radius:999px;}
 button{font-family:inherit; cursor:pointer;}
-input{font-family:inherit;}
+input, select{font-family:inherit;}
 :focus-visible{outline:2px solid var(--brand); outline-offset:2px;}
 
 .page{max-width:1080px; margin:0 auto; padding:0 20px 40px;}
@@ -124,7 +124,7 @@ input{font-family:inherit;}
 /* ---------- shared search bar (moved between home and topbar via JS) ---------- */
 
 .search-bar{
-  display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end;
+  display:flex; flex-wrap:wrap; gap:14px; align-items:flex-start;
   background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
   padding:18px; box-shadow:var(--shadow);
 }
@@ -132,15 +132,15 @@ input{font-family:inherit;}
   padding:8px 10px; box-shadow:none; border-radius:10px; gap:10px;
 }
 .search-bar.compact .field label{display:none;}
-.search-bar.compact .field input, .search-bar.compact .field select{padding:8px 10px; font-size:13.5px;}
+.search-bar.compact .field input, .search-bar.compact .field select, .search-bar.compact .field .category-button{padding:8px 10px; font-size:13.5px;}
 .search-bar.compact button[type=submit]{padding:9px 16px; font-size:13.5px;}
 .field{flex:1; min-width:180px; display:flex; flex-direction:column; gap:6px;}
 .field label{font-size:13px; color:var(--ink-soft); font-weight:500;}
-.field input, .field select{
+.field input, .field select, .field .category-button{
   padding:10px 12px; border:1px solid var(--border-strong); border-radius:8px;
-  font-size:14px; background:var(--bg); color:var(--ink); width:100%;
+  font-family:inherit; font-size:14px; font-weight:400; line-height:1.5; background:var(--bg); color:var(--ink); width:100%;
 }
-.field input:focus, .field select:focus{background:var(--surface);}
+.field input:focus, .field select:focus, .field .category-button:focus{background:var(--surface);}
 
 .ac-wrap{position:relative;}
 .ac-list{
@@ -268,6 +268,27 @@ body.modal-open{overflow:hidden;}
   box-shadow:0 8px 24px rgba(0,0,0,0.2); z-index:60;
 }
 
+
+/* Shared category controls use the same list surface and typography as autocomplete. */
+.category-button{display:grid;grid-template-columns:minmax(0,1fr) 9px;align-items:center;gap:10px;text-align:left;width:100%;border:1px solid var(--border-strong);border-radius:8px;background:var(--bg);color:var(--ink);font-family:inherit;font-size:14px;font-weight:400;line-height:1.5;padding:10px 12px;}
+.category-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.category-chevron{width:7px;height:7px;border:solid currentColor;border-width:0 1.5px 1.5px 0;transform:translateY(-2px) rotate(45deg);justify-self:center;}
+.category-button:disabled{cursor:default;opacity:.65;}
+.ac-wrap{min-width:0;}
+.ac-item{overflow-wrap:break-word;}
+.ac-name{display:block;}
+.vaccine-description{font-size:12.5px;line-height:1.45;font-weight:400;color:var(--ink-soft);margin:4px 0 0;overflow-wrap:break-word;}
+.ac-item .vaccine-description{margin-top:3px;}
+.search-bar button[type=submit]{margin-top:25.5px;}
+.search-bar.compact button[type=submit]{margin-top:0;}
+.detail-rows .v.vaccine-value{min-width:0;}
+#dVaccine{display:block;}
+#dVaccineDescription{display:block;font-size:12.5px;line-height:1.45;font-weight:400;color:var(--ink-soft);margin-top:4px;}
+.modal .category-button{margin-bottom:14px;background:var(--surface);color:var(--ink);font-size:14px;font-weight:400;padding:10px 12px;border:1px solid var(--border-strong);}
+.modal .category-button:hover,.modal .category-button:disabled{background:var(--surface);color:var(--ink);}
+.modal .vaccine-description{margin:-8px 0 14px;}
+@media(max-width:719px){.search-bar button[type=submit]{margin-top:0;}}
+
 /* ---------- responsive: master-detail on desktop, slide-over on mobile ---------- */
 @media (min-width:720px){
   .content{display:grid; grid-template-columns:340px 1fr; gap:22px; align-items:start;}
@@ -343,7 +364,7 @@ body.modal-open{overflow:hidden;}
         <p class="detail-loc" id="dLoc"></p>
 
         <div class="detail-rows">
-          <div class="row" id="dVaccineRow"><span class="k">Вакцина</span><span class="v" id="dVaccine"></span></div>
+          <div class="row" id="dVaccineRow"><span class="k">Вакцина</span><span class="v vaccine-value"><span id="dVaccine"></span><span id="dVaccineDescription" hidden></span></span></div>
           <div class="row"><span class="k">Последнее подтверждение</span><span class="v" id="dDate"></span></div>
           <div class="row"><span class="k">Подтверждений</span><span class="v" id="dCount"></span></div>
           <div class="row"><span class="k">Стоимость вакцины</span><span class="v" id="dVaccinePrice"></span></div>
@@ -380,8 +401,12 @@ body.modal-open{overflow:hidden;}
 
 <form id="searchForm" class="search-bar" autocomplete="off">
   <div class="field">
-    <label for="categoryInput">Категория</label>
-    <select id="categoryInput" disabled><option value="">Загрузка категорий…</option></select>
+    <label id="categoryInputLabel" for="categoryInputButton">Категория</label>
+    <div class="ac-wrap category-picker">
+            <select id="categoryInput" disabled hidden><option value="">Загрузка категорий…</option></select>
+            <button id="categoryInputButton" class="category-button" type="button" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="categoryInputList" aria-labelledby="categoryInputLabel categoryInputText" disabled><span id="categoryInputText" class="category-text">Загрузка категорий…</span><span class="category-chevron" aria-hidden="true"></span></button>
+            <ul id="categoryInputList" class="ac-list" role="listbox" aria-labelledby="categoryInputLabel" hidden></ul>
+          </div>
   </div>
   <div class="field">
     <label for="vaccineInput">Вакцина</label>
@@ -389,6 +414,7 @@ body.modal-open{overflow:hidden;}
       <input id="vaccineInput" placeholder="Например, Варилрикс" autocomplete="off">
       <ul class="ac-list" id="vaccineAcList" hidden></ul>
     </div>
+    <p id="searchVaccineDescription" class="vaccine-description" aria-live="polite" hidden></p>
   </div>
   <div class="field">
     <label for="cityInput">Город</label>
@@ -421,10 +447,15 @@ body.modal-open{overflow:hidden;}
         <input id="newClinicNameInput" placeholder="Например, Детская поликлиника №5">
 
         <div id="newEntryRevealFields">
-          <label for="newCategoryInput">Категория</label>
-          <select id="newCategoryInput" required disabled><option value="">Выберите категорию</option></select>
+          <label id="newCategoryInputLabel" for="newCategoryInputButton">Категория</label>
+          <div class="ac-wrap category-picker">
+            <select id="newCategoryInput" required disabled hidden><option value="">Выберите категорию</option></select>
+            <button id="newCategoryInputButton" class="category-button" type="button" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="newCategoryInputList" aria-labelledby="newCategoryInputLabel newCategoryInputText" disabled><span id="newCategoryInputText" class="category-text">Выберите категорию</span><span class="category-chevron" aria-hidden="true"></span></button>
+            <ul id="newCategoryInputList" class="ac-list" role="listbox" aria-labelledby="newCategoryInputLabel" hidden></ul>
+          </div>
           <label for="newVaccineInput">Вакцина</label>
           <select id="newVaccineInput" required disabled><option value="">Сначала выберите категорию</option></select>
+          <p id="newVaccineDescription" class="vaccine-description" aria-live="polite" hidden></p>
 
           <label for="newCityInput">Город</label>
           <div class="ac-wrap">
@@ -504,7 +535,8 @@ function fmtDate(dateStr){
 function mapClinicFromApi(c){
   return {
     "_id": c._id,
-    "Вакцина": c.vaccine,
+    "Вакцина": c.vaccineDisplayName || c.vaccine,
+    "Описание_вакцины": c.vaccineDescription || "",
     "Клиника": c.clinic,
     "Город": c.city,
     "Локация": c.location,
@@ -525,6 +557,120 @@ let VACCINES = [];
 let CITIES = [];
 let CATEGORIES = [];
 
+const categoryPickers = [];
+
+function refreshCategoryPickers(){
+  categoryPickers.forEach(picker => picker.refresh());
+}
+
+function setupCategoryPicker(selectEl, buttonEl, listEl){
+  const wrapper = buttonEl.parentElement;
+  const textEl = buttonEl.querySelector(".category-text");
+  let activeIndex = -1;
+  let options = [];
+  let typed = "";
+  let typedTimer;
+
+  function close(){
+    listEl.hidden = true;
+    buttonEl.setAttribute("aria-expanded", "false");
+    buttonEl.removeAttribute("aria-activedescendant");
+  }
+  function highlight(index){
+    activeIndex = Math.max(0, Math.min(index, options.length - 1));
+    [...listEl.children].forEach((item, i) => item.classList.toggle("active", i === activeIndex));
+    const active = listEl.children[activeIndex];
+    if (active){
+      buttonEl.setAttribute("aria-activedescendant", active.id);
+      active.scrollIntoView({ block: "nearest" });
+    }
+  }
+  function choose(index){
+    const option = options[index];
+    if (!option || option.disabled) return;
+    selectEl.value = option.value;
+    close();
+    selectEl.dispatchEvent(new Event("change", { bubbles: true }));
+    buttonEl.focus();
+  }
+  function open(){
+    if (selectEl.disabled) return;
+    options = [...selectEl.options].filter(option => !option.disabled);
+    listEl.replaceChildren();
+    options.forEach((option, index) => {
+      const item = document.createElement("li");
+      item.id = `${listEl.id}-option-${index}`;
+      item.className = "ac-item";
+      item.setAttribute("role", "option");
+      item.setAttribute("aria-selected", String(option.value === selectEl.value));
+      item.textContent = option.textContent;
+      item.addEventListener("mousedown", event => event.preventDefault());
+      item.addEventListener("click", () => choose(index));
+      listEl.appendChild(item);
+    });
+    if (!options.length) return;
+    listEl.hidden = false;
+    buttonEl.setAttribute("aria-expanded", "true");
+    highlight(Math.max(0, options.findIndex(option => option.value === selectEl.value)));
+  }
+  function refresh(){
+    buttonEl.disabled = selectEl.disabled;
+    textEl.textContent = selectEl.selectedOptions[0]?.textContent || "Выберите категорию";
+    close();
+  }
+  buttonEl.addEventListener("click", () => listEl.hidden ? open() : close());
+  buttonEl.addEventListener("keydown", event => {
+    if (["ArrowDown", "ArrowUp", "Home", "End", "Enter", " "].includes(event.key)){
+      event.preventDefault();
+      const wasOpen = !listEl.hidden;
+      if (!wasOpen) open();
+      if (listEl.hidden) return;
+      if (event.key === "Home") highlight(0);
+      else if (event.key === "End") highlight(options.length - 1);
+      else if (wasOpen && event.key === "ArrowDown") highlight(activeIndex + 1);
+      else if (wasOpen && event.key === "ArrowUp") highlight(activeIndex - 1);
+      else if (wasOpen && ["Enter", " "].includes(event.key)) choose(activeIndex);
+    } else if (event.key === "Escape"){
+      if (!listEl.hidden) event.preventDefault();
+      close();
+    } else if (event.key === "Tab"){
+      close();
+    } else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey){
+      event.preventDefault();
+      if (listEl.hidden) open();
+      typed += event.key.toLocaleLowerCase("ru");
+      clearTimeout(typedTimer);
+      typedTimer = setTimeout(() => { typed = ""; }, 650);
+      const index = options.findIndex(option => option.textContent.toLocaleLowerCase("ru").startsWith(typed));
+      if (index >= 0) highlight(index);
+    }
+  });
+  selectEl.addEventListener("change", refresh);
+  document.addEventListener("pointerdown", event => { if (!wrapper.contains(event.target)) close(); });
+  document.addEventListener("focusin", event => { if (!wrapper.contains(event.target)) close(); });
+  refresh();
+  return { refresh, close };
+}
+
+function setDescription(element, text){
+  element.textContent = text || "";
+  element.hidden = !text;
+}
+
+function updateSearchVaccineDescription(){
+  const input = document.getElementById("vaccineInput");
+  const selected = VACCINES.find(option => option.id === input.dataset.vaccineId) ||
+    vaccineOptions(document.getElementById("categoryInput").value)
+      .find(option => option.name.toLowerCase() === input.value.trim().toLowerCase());
+  setDescription(document.getElementById("searchVaccineDescription"), selected?.description);
+}
+
+function updateNewVaccineDescription(){
+  const selected = VACCINES.find(option => option.id === document.getElementById("newVaccineInput").value);
+  setDescription(document.getElementById("newVaccineDescription"), selected?.description);
+}
+
+
 function fillSelect(select, options, placeholder){
   const previous = select.value;
   select.replaceChildren(new Option(placeholder, ""));
@@ -543,6 +689,7 @@ function updateNewVaccineOptions(){
   fillSelect(select, categoryId ? vaccineOptions(categoryId, true) : [],
     categoryId ? "Выберите вакцину" : "Сначала выберите категорию");
   select.disabled = !categoryId;
+  updateNewVaccineDescription();
   updateSubmitState();
 }
 
@@ -565,6 +712,8 @@ async function buildOptionLists(){
     fillSelect(newSelect, CATEGORIES, "Выберите категорию");
     searchSelect.disabled = false;
     newSelect.disabled = false;
+    refreshCategoryPickers();
+    updateSearchVaccineDescription();
     updateNewVaccineOptions();
   }
   if (cities.status === "fulfilled" && Array.isArray(cities.value)){
@@ -595,7 +744,15 @@ function setupAutocomplete(inputEl, listEl, options){
     matches.forEach(option => {
       const li = document.createElement("li");
       li.className = "ac-item";
-      li.textContent = option.name;
+      if (option.description){
+        const name = document.createElement("span");
+        name.className = "ac-name";
+        name.textContent = option.name;
+        const description = document.createElement("span");
+        description.className = "vaccine-description";
+        description.textContent = option.description;
+        li.append(name, description);
+      } else li.textContent = option.name;
       li.addEventListener("mousedown", e => { e.preventDefault(); choose(option); });
       listEl.appendChild(li);
     });
@@ -628,6 +785,7 @@ document.getElementById("categoryInput").addEventListener("change", () => {
   input.value = "";
   delete input.dataset.vaccineId;
   document.getElementById("vaccineAcList").hidden = true;
+  updateSearchVaccineDescription();
 });
 document.getElementById("newCategoryInput").addEventListener("change", () => {
   document.getElementById("newVaccineInput").value = "";
@@ -743,6 +901,7 @@ function openDetail(i){
   const vaccineRow = document.getElementById("dVaccineRow");
   if (r["Вакцина"]){ vaccineRow.style.display = "flex"; document.getElementById("dVaccine").textContent = r["Вакцина"]; }
   else vaccineRow.style.display = "none";
+  setDescription(document.getElementById("dVaccineDescription"), r["Описание_вакцины"]);
   document.getElementById("dCount").textContent = r["Число_подтверждений"];
   document.getElementById("dVaccinePrice").textContent = fmtPrice(r["Стоимость_вакцины"]);
   document.getElementById("dVisitPrice").textContent = fmtPrice(r["Стоимость_приема"]);
@@ -904,6 +1063,8 @@ function openConfirmModal(newEntry){
     document.getElementById("newCityInput").value = document.getElementById("cityInput").value.trim();
     document.getElementById("newClinicNameInput").value = "";
     document.getElementById("newAddressInput").value = "";
+    refreshCategoryPickers();
+    updateNewVaccineDescription();
   }
 
   updateSubmitState();
@@ -989,9 +1150,15 @@ document.getElementById("modalDoneBtn").addEventListener("click", () => {
 // загрузке (например, "холодный старт" бесплатного тарифа Render) страница
 // на секунду-другую показывает форму в её исходном, "сыром" месте в разметке.
 goHome();
+["categoryInput", "newCategoryInput"].forEach(id => categoryPickers.push(setupCategoryPicker(
+  document.getElementById(id), document.getElementById(id + "Button"), document.getElementById(id + "List")
+)));
 setupAutocomplete(document.getElementById("vaccineInput"), document.getElementById("vaccineAcList"), () => vaccineOptions(document.getElementById("categoryInput").value));
 setupAutocomplete(document.getElementById("cityInput"), document.getElementById("cityAcList"), CITIES);
 setupAutocomplete(document.getElementById("newCityInput"), document.getElementById("newCityAcList"), CITIES);
+
+["input", "change"].forEach(event => document.getElementById("vaccineInput").addEventListener(event, updateSearchVaccineDescription));
+document.getElementById("newVaccineInput").addEventListener("change", updateNewVaccineDescription);
 
 // Списки вакцин/городов и общий счётчик подгружаются в фоне и не должны
 // блокировать первую отрисовку страницы.
