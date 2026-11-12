@@ -595,7 +595,7 @@ function setupAutocomplete(inputEl, listEl, options){
     matches.forEach(option => {
       const li = document.createElement("li");
       li.className = "ac-item";
-      li.textContent = option.name + (option.legacyNote ? " — " + option.legacyNote : "");
+      li.textContent = option.name;
       li.addEventListener("mousedown", e => { e.preventDefault(); choose(option); });
       listEl.appendChild(li);
     });
