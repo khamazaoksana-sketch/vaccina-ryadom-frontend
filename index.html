@@ -117,8 +117,6 @@ input, select{font-family:inherit;}
   display:flex; align-items:center; gap:18px; flex-wrap:wrap;
   padding:16px 0; border-bottom:1px solid var(--border); margin-bottom:22px;
 }
-.topbar-brand{cursor:pointer; flex:none;}
-.topbar-brand:hover{text-decoration:underline;}
 #topbarSearchSlot{flex:1; min-width:260px;}
 
 /* ---------- shared search bar (moved between home and topbar via JS) ---------- */
@@ -235,13 +233,13 @@ input, select{font-family:inherit;}
 }
 .modal-backdrop[hidden]{display:none;}
 .modal{
-  background:var(--surface); border-radius:var(--radius-lg); padding:26px; max-width:380px; width:100%;
+  background:var(--surface); border-radius:var(--radius-lg); padding:52px 26px 26px; max-width:380px; width:100%;
   position:relative; box-shadow:0 24px 48px rgba(0,0,0,0.18);
 }
-.modal-scroll{max-height:calc(100vh - 120px); overflow-y:auto; -webkit-overflow-scrolling:touch; padding:0 6px; margin:0 -6px;}
+.modal-scroll{max-height:calc(100vh - 118px); max-height:calc(100dvh - 118px); overflow-y:auto; -webkit-overflow-scrolling:touch; padding:0 6px; margin:0 -6px;}
 body.modal-open{overflow:hidden;}
 .modal .modal-close{
-  position:absolute; top:14px; right:14px; width:28px; height:28px;
+  position:absolute; top:12px; right:14px; width:32px; height:32px; z-index:2;
   display:flex; align-items:center; justify-content:center;
   border:none; background:none; border-radius:8px; color:var(--ink-muted); padding:0;
 }
@@ -251,7 +249,11 @@ body.modal-open{overflow:hidden;}
 .modal-sub{font-size:13px; color:var(--ink-soft); margin:0 0 16px;}
 .modal label{font-size:13px; color:var(--ink-soft); display:block; margin-bottom:6px; font-weight:500;}
 .modal input, .modal textarea, .modal select{width:100%; padding:10px 12px; border:1px solid var(--border-strong); border-radius:8px; font-size:14px; margin-bottom:14px; font-family:inherit;}
+#ageCategoryInput{appearance:none;-webkit-appearance:none;line-height:1.5;padding-right:40px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%23343b3b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:16px 16px;}
 .modal textarea{resize:vertical;}
+.modal .free-price{display:flex;align-items:center;gap:8px;margin:-6px 0 16px;font-weight:400;cursor:pointer;}
+.modal .free-price input{width:16px;height:16px;padding:0;margin:0;accent-color:var(--brand);}
+.modal input:disabled{background:var(--bg);color:var(--ink-muted);cursor:not-allowed;}
 .modal input[type=number]::-webkit-outer-spin-button,
 .modal input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
 .modal input[type=number]{-moz-appearance:textfield; appearance:textfield;}
@@ -329,13 +331,6 @@ body.modal-open{overflow:hidden;}
 <div class="page">
 
   <header class="topbar" id="topbar" hidden>
-    <button class="brand-mark topbar-brand" id="topbarBrand" type="button">
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M12 2C7.58 2 4 5.58 4 10c0 5.25 6.4 11.09 7.19 11.79a1.2 1.2 0 0 0 1.62 0C13.6 21.09 20 15.25 20 10c0-4.42-3.58-8-8-8z" fill="var(--brand)"/>
-        <path d="M12 6.5v7M8.5 10h7" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
-      </svg>
-      <span>Вакцина Рядом</span>
-    </button>
     <div id="topbarSearchSlot"></div>
   </header>
 
@@ -414,7 +409,6 @@ body.modal-open{overflow:hidden;}
       <input id="vaccineInput" placeholder="Например, Варилрикс" autocomplete="off">
       <ul class="ac-list" id="vaccineAcList" hidden></ul>
     </div>
-    <p id="searchVaccineDescription" class="vaccine-description" aria-live="polite" hidden></p>
   </div>
   <div class="field">
     <label for="cityInput">Город</label>
@@ -469,10 +463,20 @@ body.modal-open{overflow:hidden;}
       </div>
 
       <label for="vaccinePriceInput">Стоимость вакцины</label>
-      <input id="vaccinePriceInput" type="number" inputmode="numeric" min="0" step="1" placeholder="Например, 3500">
+      <input id="vaccinePriceInput" type="number" inputmode="numeric" min="0" step="1" placeholder="Например, 3500" required>
+      <label class="free-price"><input id="vaccineFreeInput" type="checkbox">Бесплатно</label>
 
       <label for="visitPriceInput">Стоимость приёма</label>
-      <input id="visitPriceInput" type="number" inputmode="numeric" min="0" step="1" placeholder="Например, 1200">
+      <input id="visitPriceInput" type="number" inputmode="numeric" min="0" step="1" placeholder="Например, 1200" required>
+      <label class="free-price"><input id="visitFreeInput" type="checkbox">Бесплатно</label>
+
+      <label for="ageCategoryInput">Для кого</label>
+      <select id="ageCategoryInput" required>
+        <option value="">Выберите вариант</option>
+        <option>Для детей</option>
+        <option>Для взрослых</option>
+        <option>Для всех возрастов</option>
+      </select>
 
       <label for="commentInput">Комментарий <span class="optional-tag">необязательно</span></label>
       <textarea id="commentInput" rows="3" placeholder="Например: были в наличии 2 упаковки, просили звонить заранее"></textarea>
@@ -657,13 +661,6 @@ function setDescription(element, text){
   element.hidden = !text;
 }
 
-function updateSearchVaccineDescription(){
-  const input = document.getElementById("vaccineInput");
-  const selected = VACCINES.find(option => option.id === input.dataset.vaccineId) ||
-    vaccineOptions(document.getElementById("categoryInput").value)
-      .find(option => option.name.toLowerCase() === input.value.trim().toLowerCase());
-  setDescription(document.getElementById("searchVaccineDescription"), selected?.description);
-}
 
 function updateNewVaccineDescription(){
   const selected = VACCINES.find(option => option.id === document.getElementById("newVaccineInput").value);
@@ -713,7 +710,6 @@ async function buildOptionLists(){
     searchSelect.disabled = false;
     newSelect.disabled = false;
     refreshCategoryPickers();
-    updateSearchVaccineDescription();
     updateNewVaccineOptions();
   }
   if (cities.status === "fulfilled" && Array.isArray(cities.value)){
@@ -785,7 +781,6 @@ document.getElementById("categoryInput").addEventListener("change", () => {
   input.value = "";
   delete input.dataset.vaccineId;
   document.getElementById("vaccineAcList").hidden = true;
-  updateSearchVaccineDescription();
 });
 document.getElementById("newCategoryInput").addEventListener("change", () => {
   document.getElementById("newVaccineInput").value = "";
@@ -945,7 +940,7 @@ function parsePriceInput(raw){
   const trimmed = raw.trim();
   if (!trimmed) return null;
   const num = Number(trimmed);
-  if (isNaN(num)) return null;
+  if (!Number.isSafeInteger(num) || num < 0) return null;
   return num === 0 ? "Бесплатно" : num;
 }
 
@@ -1012,7 +1007,7 @@ document.getElementById("searchForm").addEventListener("submit", async (e) => {
   }
 });
 
-document.getElementById("topbarBrand").addEventListener("click", goHome);
+
 document.getElementById("backBtn").addEventListener("click", closeDetail);
 
 // ---- confirmation modal flow ----
@@ -1020,6 +1015,23 @@ const modal = document.getElementById("modalBackdrop");
 const submitBtn = document.getElementById("submitBtn");
 const newEntryFields = document.getElementById("newEntryFields");
 let isNewEntry = false;
+let isSubmitting = false;
+
+function formPrice(inputId, freeId){
+  return document.getElementById(freeId).checked ? "Бесплатно" :
+    parsePriceInput(document.getElementById(inputId).value);
+}
+
+function syncFreePrice(inputId, freeId){
+  const input = document.getElementById(inputId);
+  const free = document.getElementById(freeId).checked;
+  input.disabled = free;
+  input.required = !free;
+  updateSubmitState();
+}
+for (const [inputId, freeId] of [["vaccinePriceInput", "vaccineFreeInput"], ["visitPriceInput", "visitFreeInput"]]){
+  document.getElementById(freeId).addEventListener("change", () => syncFreePrice(inputId, freeId));
+}
 
 function updateSubmitState(){
   let newFieldsOk = true;
@@ -1029,11 +1041,11 @@ function updateSubmitState(){
       Boolean(document.getElementById("newCategoryInput").value) &&
       !document.getElementById("newVaccineInput").disabled;
   }
-  const vaccinePriceOk = parsePriceInput(document.getElementById("vaccinePriceInput").value) !== null;
-  const visitPriceOk = parsePriceInput(document.getElementById("visitPriceInput").value) !== null;
-  submitBtn.disabled = !(newFieldsOk && vaccinePriceOk && visitPriceOk);
+  const vaccinePriceOk = formPrice("vaccinePriceInput", "vaccineFreeInput") !== null;
+  const visitPriceOk = formPrice("visitPriceInput", "visitFreeInput") !== null;
+  submitBtn.disabled = isSubmitting || !(newFieldsOk && vaccinePriceOk && visitPriceOk && document.getElementById("ageCategoryInput").value);
 }
-["newVaccineInput","newCityInput","newClinicNameInput","newAddressInput","vaccinePriceInput","visitPriceInput"].forEach(id => {
+["newVaccineInput","newCityInput","newClinicNameInput","newAddressInput","vaccinePriceInput","visitPriceInput","ageCategoryInput"].forEach(id => {
   document.getElementById(id).addEventListener("input", updateSubmitState);
   document.getElementById(id).addEventListener("change", updateSubmitState);
 });
@@ -1047,6 +1059,11 @@ function openConfirmModal(newEntry){
   document.getElementById("vaccinePriceInput").value = "";
   document.getElementById("visitPriceInput").value = "";
   document.getElementById("commentInput").value = "";
+  document.getElementById("ageCategoryInput").value = "";
+  document.getElementById("vaccineFreeInput").checked = false;
+  document.getElementById("visitFreeInput").checked = false;
+  syncFreePrice("vaccinePriceInput", "vaccineFreeInput");
+  syncFreePrice("visitPriceInput", "visitFreeInput");
 
   if (newEntry){
     const categoryId = document.getElementById("categoryInput").value;
@@ -1087,8 +1104,12 @@ document.getElementById("modalClose").addEventListener("click", hideModal);
 modal.addEventListener("click", (e) => { if (e.target === modal) hideModal(); });
 
 submitBtn.addEventListener("click", async () => {
-  const vaccinePrice = parsePriceInput(document.getElementById("vaccinePriceInput").value);
-  const visitPrice = parsePriceInput(document.getElementById("visitPriceInput").value);
+  updateSubmitState();
+  if (submitBtn.disabled) return;
+  isSubmitting = true;
+  const ageCategory = document.getElementById("ageCategoryInput").value;
+  const vaccinePrice = formPrice("vaccinePriceInput", "vaccineFreeInput");
+  const visitPrice = formPrice("visitPriceInput", "visitFreeInput");
   const comment = document.getElementById("commentInput").value.trim();
 
   submitBtn.disabled = true;
@@ -1103,7 +1124,7 @@ submitBtn.addEventListener("click", async () => {
         clinicName: document.getElementById("newClinicNameInput").value.trim(),
         city: document.getElementById("newCityInput").value.trim(),
         address: document.getElementById("newAddressInput").value.trim(),
-        vaccinePrice, visitPrice,
+        vaccinePrice, visitPrice, ageCategory,
         note: comment || null,
       };
       const res = await fetch(`${API_BASE}/api/clinics`, {
@@ -1114,7 +1135,7 @@ submitBtn.addEventListener("click", async () => {
       if (!res.ok) throw new Error((await res.json().catch(()=>({}))).error || `Ошибка (${res.status})`);
     } else {
       const r = currentResults[selectedIndex];
-      const body = { clinicId: r["_id"], vaccinePrice, visitPrice, note: comment || null };
+      const body = { clinicId: r["_id"], vaccinePrice, visitPrice, ageCategory, note: comment || null };
       const res = await fetch(`${API_BASE}/api/confirmations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1128,6 +1149,7 @@ submitBtn.addEventListener("click", async () => {
   } catch (err){
     showToast("Не удалось отправить: " + err.message);
   } finally {
+    isSubmitting = false;
     submitBtn.textContent = "Отправить";
     updateSubmitState();
   }
@@ -1157,7 +1179,6 @@ setupAutocomplete(document.getElementById("vaccineInput"), document.getElementBy
 setupAutocomplete(document.getElementById("cityInput"), document.getElementById("cityAcList"), CITIES);
 setupAutocomplete(document.getElementById("newCityInput"), document.getElementById("newCityAcList"), CITIES);
 
-["input", "change"].forEach(event => document.getElementById("vaccineInput").addEventListener(event, updateSearchVaccineDescription));
 document.getElementById("newVaccineInput").addEventListener("change", updateNewVaccineDescription);
 
 // Списки вакцин/городов и общий счётчик подгружаются в фоне и не должны
