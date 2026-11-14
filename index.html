@@ -249,7 +249,6 @@ body.modal-open{overflow:hidden;}
 .modal-sub{font-size:13px; color:var(--ink-soft); margin:0 0 16px;}
 .modal label{font-size:13px; color:var(--ink-soft); display:block; margin-bottom:6px; font-weight:500;}
 .modal input, .modal textarea, .modal select{width:100%; padding:10px 12px; border:1px solid var(--border-strong); border-radius:8px; font-size:14px; margin-bottom:14px; font-family:inherit;}
-#ageCategoryInput{appearance:none;-webkit-appearance:none;line-height:1.5;padding-right:40px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%23343b3b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:16px 16px;}
 .modal textarea{resize:vertical;}
 .modal .free-price{display:flex;align-items:center;gap:8px;margin:-6px 0 16px;font-weight:400;cursor:pointer;}
 .modal .free-price input{width:16px;height:16px;padding:0;margin:0;accent-color:var(--brand);}
@@ -288,6 +287,7 @@ body.modal-open{overflow:hidden;}
 #dVaccineDescription{display:block;font-size:12.5px;line-height:1.45;font-weight:400;color:var(--ink-soft);margin-top:4px;}
 .modal .category-button{margin-bottom:14px;background:var(--surface);color:var(--ink);font-size:14px;font-weight:400;padding:10px 12px;border:1px solid var(--border-strong);}
 .modal .category-button:hover,.modal .category-button:disabled{background:var(--surface);color:var(--ink);}
+.age-picker .ac-list{position:static;margin:-8px 0 14px;max-height:180px;}
 .modal .vaccine-description{margin:-8px 0 14px;}
 @media(max-width:719px){.search-bar button[type=submit]{margin-top:0;}}
 
@@ -470,13 +470,17 @@ body.modal-open{overflow:hidden;}
       <input id="visitPriceInput" type="number" inputmode="numeric" min="0" step="1" placeholder="Например, 1200" required>
       <label class="free-price"><input id="visitFreeInput" type="checkbox">Бесплатно</label>
 
-      <label for="ageCategoryInput">Для кого</label>
-      <select id="ageCategoryInput" required>
-        <option value="">Выберите вариант</option>
-        <option>Для детей</option>
-        <option>Для взрослых</option>
-        <option>Для всех возрастов</option>
-      </select>
+      <label id="ageCategoryLabel" for="ageCategoryInputButton">Для кого</label>
+      <div class="ac-wrap age-picker">
+        <select id="ageCategoryInput" required hidden>
+          <option value="" disabled selected>Выберите вариант</option>
+          <option>Для детей</option>
+          <option>Для взрослых</option>
+          <option>Для всех возрастов</option>
+        </select>
+        <button id="ageCategoryInputButton" class="category-button" type="button" role="combobox" aria-required="true" aria-haspopup="listbox" aria-expanded="false" aria-controls="ageCategoryInputList" aria-labelledby="ageCategoryLabel ageCategoryText"><span id="ageCategoryText" class="category-text">Выберите вариант</span><span class="category-chevron" aria-hidden="true"></span></button>
+        <ul id="ageCategoryInputList" class="ac-list" role="listbox" aria-labelledby="ageCategoryLabel" hidden></ul>
+      </div>
 
       <label for="commentInput">Комментарий <span class="optional-tag">необязательно</span></label>
       <textarea id="commentInput" rows="3" placeholder="Например: были в наличии 2 упаковки, просили звонить заранее"></textarea>
@@ -1025,6 +1029,7 @@ function formPrice(inputId, freeId){
 function syncFreePrice(inputId, freeId){
   const input = document.getElementById(inputId);
   const free = document.getElementById(freeId).checked;
+  if (free) input.value = "";
   input.disabled = free;
   input.required = !free;
   updateSubmitState();
@@ -1084,6 +1089,7 @@ function openConfirmModal(newEntry){
     updateNewVaccineDescription();
   }
 
+  refreshCategoryPickers();
   updateSubmitState();
   showModal();
 }
@@ -1172,7 +1178,7 @@ document.getElementById("modalDoneBtn").addEventListener("click", () => {
 // загрузке (например, "холодный старт" бесплатного тарифа Render) страница
 // на секунду-другую показывает форму в её исходном, "сыром" месте в разметке.
 goHome();
-["categoryInput", "newCategoryInput"].forEach(id => categoryPickers.push(setupCategoryPicker(
+["categoryInput", "newCategoryInput", "ageCategoryInput"].forEach(id => categoryPickers.push(setupCategoryPicker(
   document.getElementById(id), document.getElementById(id + "Button"), document.getElementById(id + "List")
 )));
 setupAutocomplete(document.getElementById("vaccineInput"), document.getElementById("vaccineAcList"), () => vaccineOptions(document.getElementById("categoryInput").value));
