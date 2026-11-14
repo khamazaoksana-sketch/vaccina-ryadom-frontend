@@ -287,7 +287,7 @@ body.modal-open{overflow:hidden;}
 #dVaccineDescription{display:block;font-size:12.5px;line-height:1.45;font-weight:400;color:var(--ink-soft);margin-top:4px;}
 .modal .category-button{margin-bottom:14px;background:var(--surface);color:var(--ink);font-size:14px;font-weight:400;padding:10px 12px;border:1px solid var(--border-strong);}
 .modal .category-button:hover,.modal .category-button:disabled{background:var(--surface);color:var(--ink);}
-.age-picker .ac-list{position:static;margin:-8px 0 14px;max-height:180px;}
+.age-picker .ac-list{position:absolute;margin:0;max-height:180px;z-index:40;}
 .modal .vaccine-description{margin:-8px 0 14px;}
 @media(max-width:719px){.search-bar button[type=submit]{margin-top:0;}}
 
@@ -406,12 +406,12 @@ body.modal-open{overflow:hidden;}
   <div class="field">
     <label for="vaccineInput">Вакцина</label>
     <div class="ac-wrap">
-      <input id="vaccineInput" placeholder="Например, Варилрикс" autocomplete="off">
+      <input id="vaccineInput" placeholder="Все вакцины" autocomplete="off">
       <ul class="ac-list" id="vaccineAcList" hidden></ul>
     </div>
   </div>
   <div class="field">
-    <label for="cityInput">Город</label>
+    <label id="searchCityLabel" for="cityInput">Город</label>
     <div class="ac-wrap">
       <input id="cityInput" placeholder="Например, Екатеринбург" autocomplete="off">
       <ul class="ac-list" id="cityAcList" hidden></ul>
@@ -734,10 +734,10 @@ function setupAutocomplete(inputEl, listEl, options){
     inputEl.dispatchEvent(new Event("change", { bubbles: true }));
   }
   function renderOptions(query){
-    const q = query.trim().toLowerCase();
+    const q = inputEl.id === "vaccineInput" && query.trim().toLocaleLowerCase("ru") === "все вакцины" ? "" : query.trim().toLowerCase();
     const values = (typeof options === "function" ? options() : options)
       .map(option => typeof option === "string" ? { name: option } : option);
-    matches = values.filter(option => !q || option.name.toLowerCase().includes(q));
+    matches = values.filter(option => option.allVaccines || !q || option.name.toLowerCase().includes(q));
     listEl.replaceChildren();
     activeIndex = -1;
     if (matches.length === 0){ listEl.hidden = true; return; }
@@ -791,6 +791,23 @@ document.getElementById("newCategoryInput").addEventListener("change", () => {
   updateNewVaccineOptions();
 });
 document.getElementById("retryCatalogueBtn").addEventListener("click", buildOptionLists);
+
+// «Все вакцины» снимает фильтр по препарату; служебное название не передаём в API.
+function searchVaccineQuery(){
+  const value = document.getElementById("vaccineInput").value.trim();
+  return value.toLocaleLowerCase("ru") === "все вакцины" ? "" : value;
+}
+
+function updateSearchCityRequirement(){
+  const required = !document.getElementById("categoryInput").value || !searchVaccineQuery();
+  const city = document.getElementById("cityInput");
+  city.required = required;
+  city.setAttribute("aria-required", String(required));
+  city.placeholder = required ? "Выберите город" : "Например, Екатеринбург";
+  city.setCustomValidity(required && !city.value.trim() ?
+    "Выберите город, если указаны «Все категории» или «Все вакцины»." : "");
+  document.getElementById("searchCityLabel").textContent = required ? "Город *" : "Город";
+}
 
 // Реальный поиск через API вместо фильтрации локального массива.
 // Сортировку по свежести/дате теперь делает сам бэкенд (routes/search.js).
@@ -991,12 +1008,10 @@ function goResults(){
 
 document.getElementById("searchForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const vaccine = document.getElementById("vaccineInput").value;
+  updateSearchCityRequirement();
+  if (!document.getElementById("searchForm").reportValidity()) return;
+  const vaccine = searchVaccineQuery();
   const city = document.getElementById("cityInput").value;
-  if (!vaccine.trim() && !city.trim() && !document.getElementById("categoryInput").value){
-    document.getElementById("vaccineInput").focus();
-    return;
-  }
   closeDetail();
   selectedIndex = null;
   document.getElementById("detailPlaceholder").hidden = false;
@@ -1181,11 +1196,16 @@ goHome();
 ["categoryInput", "newCategoryInput", "ageCategoryInput"].forEach(id => categoryPickers.push(setupCategoryPicker(
   document.getElementById(id), document.getElementById(id + "Button"), document.getElementById(id + "List")
 )));
-setupAutocomplete(document.getElementById("vaccineInput"), document.getElementById("vaccineAcList"), () => vaccineOptions(document.getElementById("categoryInput").value));
+setupAutocomplete(document.getElementById("vaccineInput"), document.getElementById("vaccineAcList"), () => [{ name: "Все вакцины", allVaccines: true }, ...vaccineOptions(document.getElementById("categoryInput").value)]);
 setupAutocomplete(document.getElementById("cityInput"), document.getElementById("cityAcList"), CITIES);
 setupAutocomplete(document.getElementById("newCityInput"), document.getElementById("newCityAcList"), CITIES);
 
 document.getElementById("newVaccineInput").addEventListener("change", updateNewVaccineDescription);
+
+["categoryInput", "vaccineInput", "cityInput"].forEach(id => {
+  ["input", "change"].forEach(event => document.getElementById(id).addEventListener(event, updateSearchCityRequirement));
+});
+updateSearchCityRequirement();
 
 // Списки вакцин/городов и общий счётчик подгружаются в фоне и не должны
 // блокировать первую отрисовку страницы.
