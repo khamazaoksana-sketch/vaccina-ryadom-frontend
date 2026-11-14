@@ -141,6 +141,9 @@ input, select{font-family:inherit;}
 .field input:focus, .field select:focus, .field .category-button:focus{background:var(--surface);}
 
 .ac-wrap{position:relative;}
+.vaccine-picker #vaccineInput{padding-right:42px;}
+.vaccine-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:24px;height:28px;display:grid;place-items:center;border:0;padding:0;background:transparent;color:var(--ink);border-radius:4px;}
+.vaccine-toggle:hover{background:var(--brand-tint);}
 .ac-list{
   position:absolute; top:calc(100% + 6px); left:0; right:0; width:100%;
   background:var(--surface); border:1px solid var(--border); border-radius:10px;
@@ -405,9 +408,10 @@ body.modal-open{overflow:hidden;}
   </div>
   <div class="field">
     <label for="vaccineInput">Вакцина</label>
-    <div class="ac-wrap">
-      <input id="vaccineInput" placeholder="Все вакцины" autocomplete="off">
-      <ul class="ac-list" id="vaccineAcList" hidden></ul>
+    <div class="ac-wrap vaccine-picker">
+      <input id="vaccineInput" value="Все вакцины" placeholder="Все вакцины" autocomplete="off" role="combobox" aria-label="Вакцина" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="vaccineAcList" aria-expanded="false">
+      <button id="vaccineToggle" class="vaccine-toggle" type="button" aria-label="Показать список вакцин" aria-controls="vaccineAcList" tabindex="-1"><span class="category-chevron" aria-hidden="true"></span></button>
+      <ul class="ac-list" id="vaccineAcList" role="listbox" aria-label="Вакцина" hidden></ul>
     </div>
   </div>
   <div class="field">
@@ -727,10 +731,25 @@ async function buildOptionLists(){
 function setupAutocomplete(inputEl, listEl, options){
   let activeIndex = -1;
   let matches = [];
+  const toggle = inputEl.id === "vaccineInput" ? document.getElementById("vaccineToggle") : null;
+  function closeList(){
+    listEl.hidden = true;
+    if (toggle){
+      inputEl.setAttribute("aria-expanded", "false");
+      inputEl.removeAttribute("aria-activedescendant");
+    }
+  }
+  if (toggle){
+    toggle.addEventListener("mousedown", event => event.preventDefault());
+    toggle.addEventListener("click", () => {
+      if (listEl.hidden){ inputEl.focus(); renderOptions(""); }
+      else closeList();
+    });
+  }
   function choose(option){
     inputEl.value = option.name;
     inputEl.dataset.vaccineId = option.id || "";
-    listEl.hidden = true;
+    closeList();
     inputEl.dispatchEvent(new Event("change", { bubbles: true }));
   }
   function renderOptions(query){
@@ -740,10 +759,16 @@ function setupAutocomplete(inputEl, listEl, options){
     matches = values.filter(option => option.allVaccines || !q || option.name.toLowerCase().includes(q));
     listEl.replaceChildren();
     activeIndex = -1;
-    if (matches.length === 0){ listEl.hidden = true; return; }
-    matches.forEach(option => {
+    if (matches.length === 0){ closeList(); return; }
+    matches.forEach((option, index) => {
       const li = document.createElement("li");
       li.className = "ac-item";
+      if (toggle){
+        li.id = `${listEl.id}-option-${index}`;
+        li.setAttribute("role", "option");
+        li.setAttribute("aria-selected", String(option.name === inputEl.value));
+        li.classList.toggle("active", option.name === inputEl.value);
+      }
       if (option.description){
         const name = document.createElement("span");
         name.className = "ac-name";
@@ -757,14 +782,19 @@ function setupAutocomplete(inputEl, listEl, options){
       listEl.appendChild(li);
     });
     listEl.hidden = false;
+    if (toggle) inputEl.setAttribute("aria-expanded", "true");
   }
   inputEl.addEventListener("input", () => {
     delete inputEl.dataset.vaccineId;
     renderOptions(inputEl.value);
   });
-  inputEl.addEventListener("focus", () => renderOptions(inputEl.value));
-  inputEl.addEventListener("blur", () => { listEl.hidden = true; });
+  inputEl.addEventListener("focus", () => {
+    renderOptions(inputEl.value);
+    if (toggle && inputEl.value === "Все вакцины") inputEl.select();
+  });
+  inputEl.addEventListener("blur", closeList);
   inputEl.addEventListener("keydown", e => {
+    if (toggle && listEl.hidden && ["ArrowDown", "ArrowUp"].includes(e.key)) renderOptions(inputEl.value);
     const items = [...listEl.querySelectorAll(".ac-item")];
     if (listEl.hidden || !items.length) return;
     if (e.key === "ArrowDown"){
@@ -774,15 +804,18 @@ function setupAutocomplete(inputEl, listEl, options){
     } else if (e.key === "Enter" && activeIndex >= 0){
       e.preventDefault(); choose(matches[activeIndex]); return;
     } else if (e.key === "Escape"){
-      listEl.hidden = true; return;
+      closeList(); return;
     } else return;
     items.forEach((li, i) => li.classList.toggle("active", i === activeIndex));
+    if (toggle && items[activeIndex]) inputEl.setAttribute("aria-activedescendant", items[activeIndex].id);
   });
 }
 
 document.getElementById("categoryInput").addEventListener("change", () => {
   const input = document.getElementById("vaccineInput");
-  input.value = "";
+  input.value = "Все вакцины";
+  input.setAttribute("aria-expanded", "false");
+  input.removeAttribute("aria-activedescendant");
   delete input.dataset.vaccineId;
   document.getElementById("vaccineAcList").hidden = true;
 });
@@ -796,17 +829,6 @@ document.getElementById("retryCatalogueBtn").addEventListener("click", buildOpti
 function searchVaccineQuery(){
   const value = document.getElementById("vaccineInput").value.trim();
   return value.toLocaleLowerCase("ru") === "все вакцины" ? "" : value;
-}
-
-function updateSearchCityRequirement(){
-  const required = !document.getElementById("categoryInput").value || !searchVaccineQuery();
-  const city = document.getElementById("cityInput");
-  city.required = required;
-  city.setAttribute("aria-required", String(required));
-  city.placeholder = required ? "Выберите город" : "Например, Екатеринбург";
-  city.setCustomValidity(required && !city.value.trim() ?
-    "Выберите город, если указаны «Все категории» или «Все вакцины»." : "");
-  document.getElementById("searchCityLabel").textContent = required ? "Город *" : "Город";
 }
 
 // Реальный поиск через API вместо фильтрации локального массива.
@@ -1008,7 +1030,6 @@ function goResults(){
 
 document.getElementById("searchForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  updateSearchCityRequirement();
   if (!document.getElementById("searchForm").reportValidity()) return;
   const vaccine = searchVaccineQuery();
   const city = document.getElementById("cityInput").value;
@@ -1201,11 +1222,6 @@ setupAutocomplete(document.getElementById("cityInput"), document.getElementById(
 setupAutocomplete(document.getElementById("newCityInput"), document.getElementById("newCityAcList"), CITIES);
 
 document.getElementById("newVaccineInput").addEventListener("change", updateNewVaccineDescription);
-
-["categoryInput", "vaccineInput", "cityInput"].forEach(id => {
-  ["input", "change"].forEach(event => document.getElementById(id).addEventListener(event, updateSearchCityRequirement));
-});
-updateSearchCityRequirement();
 
 // Списки вакцин/городов и общий счётчик подгружаются в фоне и не должны
 // блокировать первую отрисовку страницы.
